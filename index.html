@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考生设备环境核验单 · Online Exam Verification</title>
+<link rel="icon" href="assets/images/logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ea; --paper-2:#efeadd; --ink:#1c1915; --ink-2:#4f4a3f; --ink-3:#8b8474;
+  --line:#d9d2bf; --line-2:#c2ba9f; --seal:#b13a2a; --ok:#2f6b4f; --warn:#a05a1f;
+  --serif:'Noto Serif SC',serif; --sans:'Noto Sans SC',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding:0 20px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;opacity:.05;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.55'/></svg>")}
+.sheet{max-width:880px;margin:36px auto 80px}
+::selection{background:rgba(177,58,42,.18)}
+
+/* ═══ 文书头 ═══ */
+.masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;animation:rise .7s ease both}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.32em;color:var(--ink-2);display:flex;align-items:center;gap:10px;text-transform:uppercase}
+.eyebrow::before{content:'';width:6px;height:6px;background:var(--seal);transform:rotate(45deg);flex-shrink:0}
+.masthead h1{font:900 clamp(26px,5vw,42px)/1.25 var(--serif);letter-spacing:.06em;margin:14px 0 10px}
+.masthead .sub{font-size:13px;color:var(--ink-2);line-height:1.9;max-width:520px}
+.doc-meta{text-align:right;font:400 12px/2 var(--mono);color:var(--ink-2);border-left:1px solid var(--line-2);padding-left:20px}
+.doc-meta b{font-weight:500;color:var(--ink);display:block;letter-spacing:.06em}
+.doc-meta .clock{color:var(--seal);font-variant-numeric:tabular-nums}
+.rule{margin-top:22px;border-top:1px solid var(--ink);position:relative}
+.rule::after{content:'';position:absolute;left:0;right:0;top:3px;border-top:1px solid var(--ink)}
+
+/* ═══ 步骤条 ═══ */
+.steps{display:flex;align-items:center;gap:8px;margin:26px 0 8px;animation:rise .7s .1s ease both;flex-wrap:nowrap}
+.step{display:flex;align-items:center;gap:8px;min-width:0}
+.step .num{width:28px;height:28px;border:1px solid var(--line-2);display:grid;place-items:center;font:500 10px var(--mono);color:var(--ink-3);transition:all .3s;flex-shrink:0}
+.step span.lb{font-size:12px;letter-spacing:.08em;color:var(--ink-3);white-space:nowrap;transition:color .3s}
+.step.active .num{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.step.active .lb{color:var(--ink);font-weight:700}
+.step.done .num{border-color:var(--ok);background:var(--ok)}
+.step.done .num i{color:transparent;position:relative}
+.step.done .num i::after{content:'';position:absolute;inset:0;margin:auto;width:8px;height:4px;border-left:1.6px solid var(--paper);border-bottom:1.6px solid var(--paper);transform:translateY(-1px) rotate(-45deg)}
+.step:not(:last-child)::after{content:'';width:clamp(8px,2.4vw,26px);height:1px;background:var(--line-2);flex-shrink:0}
+
+/* ═══ 段落 ═══ */
+.section{margin-top:52px;transition:opacity .6s;scroll-margin-top:20px}
+.section.locked{opacity:.32}
+.section.flash{animation:secflash 1.4s ease}
+@keyframes secflash{0%{background:rgba(177,58,42,.06)}100%{background:transparent}}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.sec-num{font:900 30px/1 var(--serif);color:var(--ink-3);transition:color .4s}
+.sec-title{font:700 16px var(--sans);letter-spacing:.14em}
+.sec-state{margin-left:auto;font:500 10px var(--mono);letter-spacing:.18em;color:var(--ink-3);border:1px solid var(--line-2);padding:4px 10px;white-space:nowrap;transition:all .3s}
+.sec-state.running{color:var(--warn);border-color:var(--warn)}
+.sec-state.done{color:var(--ok);border-color:var(--ok)}
+.sec-state.fail{color:var(--seal);border-color:var(--seal)}
+.sec-body{padding-top:6px}
+
+/* ═══ 登记表单 ═══ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:22px}
+.field label{display:flex;justify-content:space-between;align-items:baseline;font:700 13px var(--sans);letter-spacing:.12em}
+.field label span{font:400 9px var(--mono);letter-spacing:.25em;color:var(--ink-3)}
+.field input{width:100%;margin-top:10px;padding:10px 2px;border:none;border-bottom:1.5px solid var(--line-2);background:transparent;font:700 20px var(--serif);letter-spacing:.1em;color:var(--ink);outline:none;border-radius:0}
+.field input:focus{border-bottom-color:var(--seal)}
+.field input::placeholder{color:var(--ink-3);font-weight:400;font-size:15px;letter-spacing:.02em}
+.field input:disabled{color:var(--ink-2)}
+.field-msg{margin-top:7px;font:400 11px var(--mono);color:var(--ink-3);letter-spacing:.03em;min-height:15px}
+.field-msg.ok{color:var(--ok)} .field-msg.err{color:var(--seal)}
+.form-note{margin-top:18px;font-size:12px;color:var(--ink-3);line-height:1.8}
+.reg-done{margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:14px;line-height:1.8}
+.reg-done b{font-family:var(--serif);letter-spacing:.05em;font-size:16px}
+.chip-ok{font:500 11px var(--mono);letter-spacing:.15em;color:var(--ok);border:1px solid var(--ok);padding:5px 12px;white-space:nowrap}
+
+/* ═══ 检测行 ═══ */
+.glabel{display:flex;align-items:center;gap:8px;font:500 10px var(--mono);letter-spacing:.28em;color:var(--ink-3);margin:24px 0 4px}
+.glabel::before{content:'';width:5px;height:5px;background:var(--seal);flex-shrink:0}
+.crow{display:flex;align-items:baseline;gap:10px;padding:8px 0;font-size:13.5px;opacity:0;transform:translateY(5px);transition:opacity .35s,transform .35s}
+.crow.in{opacity:1;transform:none}
+.c-name{color:var(--ink-2);white-space:nowrap}
+.c-dots{flex:1;min-width:24px;border-bottom:1px dotted var(--line-2);transform:translateY(-3px)}
+.c-val{color:var(--ink);text-align:right;max-width:58%;font-weight:500;line-height:1.5;word-break:break-all;font-variant-numeric:tabular-nums}
+.c-val .pending-txt{color:var(--ink-3);font-weight:400;animation:pulse 1s infinite}
+.c-ic{width:18px;align-self:center;flex-shrink:0;color:var(--ok)}
+.c-ic.warn{color:var(--warn)} .c-ic.badc{color:var(--seal)}
+.c-ic svg{width:15px;height:15px;display:block}
+.c-ic .spin{animation:rot .8s linear infinite}
+.c-ic svg .tick{stroke-dasharray:18;stroke-dashoffset:18}
+.crow.ok .c-ic svg .tick{animation:draw .4s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{opacity:.35}}
+.ua-block{margin-top:20px;padding:14px 16px;background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--line-2)}
+.ua-block h4{font:500 10px var(--mono);letter-spacing:.25em;color:var(--ink-3);margin-bottom:8px}
+.ua-block p{font:400 11px/1.8 var(--mono);color:var(--ink-2);word-break:break-all}
+.ua-block .fp{margin-top:8px;color:var(--ink);letter-spacing:.1em}
+.lock-tag{display:inline-block;font:500 11px var(--sans);letter-spacing:.1em;color:var(--ink-3);border:1px dashed var(--line-2);padding:7px 14px;margin-top:18px}
+
+/* ═══ 按钮 ═══ */
+.btn{font:500 13.5px var(--sans);letter-spacing:.08em;padding:12px 24px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:transform .15s,box-shadow .15s,background .2s;border-radius:0}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:3px 3px 0 rgba(28,25,21,.22)}
+.btn:active:not(:disabled){transform:translateY(0);box-shadow:none}
+.btn:disabled{border:1px dashed var(--line-2);color:var(--ink-3);cursor:not-allowed;background:transparent}
+.btn-primary{background:var(--ink);color:var(--paper)}
+.btn-primary:hover:not(:disabled){background:#000}
+.btn-big{padding:15px 32px;font-size:14.5px}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+
+/* ═══ 轨迹采样 ═══ */
+.traj-card{margin-top:24px;border:1px solid var(--line-2);background:var(--paper)}
+.traj-head{display:flex;justify-content:space-between;gap:18px;padding:18px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.traj-head h3{font:700 15px var(--serif);letter-spacing:.12em;margin-bottom:6px}
+.traj-head p{font-size:12.5px;color:var(--ink-2);line-height:1.8;max-width:460px}
+.traj-head p b{color:var(--ink)}
+.traj-live{display:flex;gap:22px;font:400 10px var(--mono);letter-spacing:.1em;color:var(--ink-3)}
+.tl-item b{display:block;font:500 17px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums;margin-bottom:3px}
+.tl-item:first-child b{color:var(--seal)}
+.traj-wrap{position:relative;background:#16130f}
+#trajCanvas{display:block;width:100%;height:340px;touch-action:none;cursor:crosshair}
+.traj-overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(22,19,15,.6);transition:opacity .3s}
+.traj-overlay.off{opacity:0;pointer-events:none}
+.traj-badge{position:absolute;top:14px;right:14px;background:rgba(22,19,15,.65)}
+
+/* ═══ 行为分析结论 ═══ */
+.beh-summary{margin-top:20px;border:1px solid var(--line-2);border-left:4px solid var(--ok);background:var(--paper-2);padding:16px 20px}
+.beh-summary.sus{border-left-color:var(--seal)}
+.beh-summary h4{font:700 13px var(--sans);letter-spacing:.12em;margin-bottom:8px}
+.beh-summary p{font-size:13px;color:var(--ink-2);line-height:2}
+.beh-summary p b{color:var(--ink)}
+
+/* ═══ 摄像头 ═══ */
+.notice-card{margin-top:20px;border:1px solid var(--line-2);background:var(--paper-2);padding:16px 20px;font-size:12.5px;color:var(--ink-2);line-height:1.9}
+.notice-card b{color:var(--ink)}
+.notice-card code{font:500 11px var(--mono);background:var(--paper);padding:1px 6px;border:1px solid var(--line)}
+.cam-idle{margin-top:26px;border:1px dashed var(--line-2);padding:38px 26px;text-align:center}
+.cam-idle .cam-art{width:52px;height:52px;margin:0 auto 18px;color:var(--ink-2)}
+.cam-idle .cam-art svg{width:100%;height:100%}
+.cam-idle h3{font:700 17px var(--serif);letter-spacing:.1em;margin-bottom:10px}
+.cam-idle p{font-size:13px;color:var(--ink-2);line-height:1.9;max-width:460px;margin:0 auto 22px}
+.privacy{margin-top:18px;font:400 11px var(--mono);color:var(--ink-3);letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
+.privacy svg{width:13px;height:13px;flex-shrink:0}
+.pane[hidden]{display:none!important}
+.cam-wait{margin-top:26px;display:flex;align-items:center;gap:14px;color:var(--ink-2);font-size:13.5px}
+.cam-wait .c-ic{width:22px}
+.cam-wait .c-ic svg{width:20px;height:20px}
+.cam-info{margin-top:22px}
+.cam-info .crow .c-val{max-width:62%}
+.cam-select{margin:16px 0 4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cam-select label{font-size:12.5px;color:var(--ink-2);letter-spacing:.05em}
+.cam-select select{font:400 12.5px var(--mono);padding:9px 34px 9px 12px;border:1px solid var(--line-2);background:var(--paper) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%234f4a3f' stroke-width='1.4'/></svg>") no-repeat right 12px center;appearance:none;color:var(--ink);cursor:pointer;max-width:100%}
+.err-card{margin-top:24px;border:1px solid var(--seal);border-left:4px solid var(--seal);padding:20px 22px;background:rgba(177,58,42,.04)}
+.err-card h3{font:700 15px var(--sans);color:var(--seal);letter-spacing:.08em;display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.err-card h3 svg{width:16px;height:16px;flex-shrink:0}
+.err-card p{font-size:13px;color:var(--ink-2);line-height:1.9;margin-bottom:6px}
+
+/* ═══ 取景与照片 ═══ */
+.stage-wrap{margin-top:26px;display:flex;flex-direction:column;align-items:center}
+.stage{position:relative;width:100%;max-width:560px;aspect-ratio:4/3;background:#16130f;overflow:hidden}
+.stage video,.stage .photo-live{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage video{transform:scaleX(-1)}
+.stage.captured video,.stage.captured .guide,.stage.captured .corners{display:none}
+.stage .photo-live{display:none}
+.stage.captured .photo-live{display:block}
+.corners i{position:absolute;width:26px;height:26px;border:2.5px solid rgba(246,243,234,.92);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.corners i:nth-child(1){top:12px;left:12px;border-right:none;border-bottom:none}
+.corners i:nth-child(2){top:12px;right:12px;border-left:none;border-bottom:none}
+.corners i:nth-child(3){bottom:12px;left:12px;border-right:none;border-top:none}
+.corners i:nth-child(4){bottom:12px;right:12px;border-left:none;border-top:none}
+.stage.focus .corners i:nth-child(1){transform:translate(10px,10px)}
+.stage.focus .corners i:nth-child(2){transform:translate(-10px,10px)}
+.stage.focus .corners i:nth-child(3){transform:translate(10px,-10px)}
+.stage.focus .corners i:nth-child(4){transform:translate(-10px,-10px)}
+.guide{position:absolute;left:50%;top:50%;width:44%;height:64%;transform:translate(-50%,-50%);border:1.5px dashed rgba(246,243,234,.32);border-radius:50%;pointer-events:none}
+.guide::after{content:'';position:absolute;left:0;right:0;top:50%;border-top:1px dashed rgba(246,243,234,.2)}
+.count-layer{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:5}
+.count-layer b{font:900 118px/1 var(--serif);color:var(--paper);text-shadow:0 4px 30px rgba(0,0,0,.5);animation:pop .72s ease-out both}
+@keyframes pop{0%{transform:scale(1.6);opacity:0}30%{opacity:1}100%{transform:scale(.92);opacity:.85}}
+.stage-bar{width:100%;max-width:560px;margin-top:16px;display:flex;flex-direction:column;gap:14px}
+.stage-bar .hint{font-size:12.5px;color:var(--ink-3);letter-spacing:.04em;text-align:center}
+.stage-bar .actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.photo-panel{margin-top:26px;display:flex;flex-direction:column;align-items:center}
+.stamp-wrap{position:relative}
+.photo-frame{background:#fff;padding:12px 12px 46px;border:1px solid var(--line-2);box-shadow:0 10px 30px -12px rgba(28,25,21,.35);max-width:min(460px,100%)}
+.photo-frame img{display:block;width:100%;height:auto}
+.photo-frame figcaption{font:400 10.5px var(--mono);color:var(--ink-3);letter-spacing:.12em;margin-top:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.seal-holder{position:absolute;right:-26px;bottom:-20px;width:132px;height:132px;pointer-events:none;z-index:6}
+.seal-holder svg{width:100%;height:100%;opacity:0}
+.stamp-wrap.stamped .seal-holder svg{animation:stampIn .55s cubic-bezier(.2,1.5,.4,1) forwards}
+.stamp-wrap.stamped .photo-frame{animation:thud .32s .2s ease}
+@keyframes stampIn{0%{transform:scale(2.3) rotate(10deg);opacity:0}55%{transform:scale(.93) rotate(-7deg);opacity:1}78%{transform:scale(1.05) rotate(-6deg)}100%{transform:scale(1) rotate(-6deg);opacity:.92}}
+@keyframes thud{30%{transform:translateY(3px) scale(.994)}}
+.photo-meta{margin-top:26px;font:400 12px var(--mono);color:var(--ink-2);letter-spacing:.05em;display:flex;align-items:center;gap:8px}
+.photo-meta .c-ic{width:16px}
+.photo-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.skip-note{margin-top:24px;border:1px dashed var(--seal);padding:20px 24px;font-size:13px;color:var(--ink-2);line-height:1.9;background:rgba(177,58,42,.03)}
+
+/* ═══ 结论 ═══ */
+.verdict-card{margin-top:26px;border:1px solid var(--ink);border-left:6px solid var(--ok);padding:28px 30px}
+.verdict-card.risk{border-left-color:var(--warn)}
+.verdict-card.fail{border-left-color:var(--seal)}
+.verdict-card h3{font:900 clamp(21px,3.6vw,30px)/1.35 var(--serif);letter-spacing:.14em;margin-bottom:14px}
+.verdict-card.risk h3{color:var(--warn)}
+.verdict-card.fail h3{color:var(--seal)}
+.verdict-card ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px 24px}
+.verdict-card li{font-size:12.5px;color:var(--ink-2);display:flex;align-items:baseline;gap:8px;line-height:1.7}
+.verdict-card li::before{content:'';width:4px;height:4px;background:var(--ok);transform:rotate(45deg);flex-shrink:0;align-self:center}
+.verdict-card li.wrn::before{background:var(--warn)}
+.verdict-card li.bad::before{background:var(--seal)}
+.verdict-card li.bad{color:var(--seal)}
+.verdict-card .vt{margin-top:18px;font:400 11px var(--mono);color:var(--ink-3);letter-spacing:.08em;word-break:break-all}
+.report-note{margin-top:16px;font-size:12px;color:var(--ink-3);line-height:1.9;max-width:560px}
+
+/* ═══ 通用 ═══ */
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:3000}
+#flash.on{animation:flashAnim .3s ease-out}
+@keyframes flashAnim{0%{opacity:0}18%{opacity:.95}100%{opacity:0}}
+#toasts{position:fixed;top:22px;left:50%;transform:translateX(-50%);z-index:4000;display:flex;flex-direction:column;gap:10px;align-items:center}
+.toast{background:var(--ink);color:var(--paper);font:400 12.5px var(--sans);letter-spacing:.06em;padding:11px 20px;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:toastIn .35s cubic-bezier(.2,1,.3,1) both;display:flex;align-items:center;gap:9px;max-width:88vw}
+.toast.warn{background:var(--seal)}
+.toast svg{width:14px;height:14px;flex-shrink:0}
+.toast.out{animation:toastOut .3s ease both}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-10px)}}
+footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18px;font:400 11px/2 var(--mono);color:var(--ink-3);letter-spacing:.04em;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+
+@media (max-width:620px){
+  .doc-meta{border-left:none;padding-left:0;text-align:left}
+  .c-val{max-width:48%}
+  .form-grid{grid-template-columns:1fr}
+  .seal-holder{right:-10px;bottom:-14px;width:104px;height:104px}
+  .photo-frame{padding:8px 8px 38px}
+}
+@media (max-width:560px){
+  .step .lb{display:none}
+  .count-layer b{font-size:88px}
+}
+</style>
+</head>
+<body>
+<div id="flash"></div>
+<div id="toasts"></div>
+<input type="file" id="fileCam" accept="image/*" capture="user" hidden>
+
+<div class="sheet">
+
+  <!-- ═══ 文书头 ═══ -->
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Online Exam · Terminal Verification</p>
+      <h1>考生设备环境核验单</h1>
+      <p class="sub">登记考生信息后，本单将核验设备类型、操作系统、浏览器与摄像头，采集设备指纹与行为特征，并留存自拍影像，作为在线考试准入依据。</p>
+    </div>
+    <div class="doc-meta">
+      <div>核验编号</div><b id="docId">—</b>
+      <div>考生</div><b id="docStudent">待登记</b>
+      <div class="clock" id="clock">—</div>
+    </div>
+  </header>
+  <div class="rule"></div>
+
+  <!-- ═══ 步骤条 ═══ -->
+  <ol class="steps" style="list-style:none">
+    <li class="step active" data-step="1"><span class="num"><i>01</i></span><span class="lb">信息登记</span></li>
+    <li class="step" data-step="2"><span class="num"><i>02</i></span><span class="lb">环境检测</span></li>
+    <li class="step" data-step="3"><span class="num"><i>03</i></span><span class="lb">设备指纹</span></li>
+    <li class="step" data-step="4"><span class="num"><i>04</i></span><span class="lb">行为采样</span></li>
+    <li class="step" data-step="5"><span class="num"><i>05</i></span><span class="lb">摄像头</span></li>
+    <li class="step" data-step="6"><span class="num"><i>06</i></span><span class="lb">自拍留档</span></li>
+    <li class="step" data-step="7"><span class="num"><i>07</i></span><span class="lb">结论报告</span></li>
+  </ol>
+
+  <!-- ═══ 〇 · 报考信息登记 ═══ -->
+  <section class="section" id="sec0">
+    <header class="sec-head">
+      <span class="sec-num">〇</span><span class="sec-title">报考信息登记</span>
+      <span class="sec-state" id="sec0State">待登记</span>
+    </header>
+    <div class="sec-body">
+      <form id="regForm" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="inputName">考生姓名<span>NAME</span></label>
+            <input id="inputName" type="text" placeholder="请输入真实姓名" autocomplete="name" maxlength="20">
+            <p class="field-msg" id="nameMsg">2–20 位中英文姓名</p>
+          </div>
+          <div class="field">
+            <label for="inputCls">班级编号<span>CLASS NO.</span></label>
+            <input id="inputCls" type="text" inputmode="numeric" placeholder="如 10501" maxlength="5">
+            <p class="field-msg" id="clsMsg">5 位数字：前 3 位届数 + 后 2 位班级</p>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary btn-big" id="btnReg" disabled>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5L13.5 4.5"/></svg>
+            登记并开始设备核验
+          </button>
+        </div>
+        <p class="form-note">班级编号格式说明：<b>10501</b> = <b>105</b> 届 <b>01</b> 班（前 3 位为届数 100–999，后 2 位为班级 01–99）。登记后信息将写入检测报告与照片水印，不可修改。</p>
+      </form>
+      <div class="reg-done" id="regDone" hidden>
+        <span class="chip-ok">✓ 已登记</span>
+        <span id="regDoneText"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 壹 · 基础环境检测 ═══ -->
+  <section class="section locked" id="sec1">
+    <header class="sec-head">
+      <span class="sec-num">壹</span><span class="sec-title">基础环境检测</span>
+      <span class="sec-state" id="sec1State">未开始</span>
+    </header>
+    <div class="sec-body"><div id="envList"></div></div>
+  </section>
+
+  <!-- ═══ 贰 · 设备指纹与环境特征 ═══ -->
+  <section class="section locked" id="sec2">
+    <header class="sec-head">
+      <span class="sec-num">贰</span><span class="sec-title">设备指纹与环境特征</span>
+      <span class="sec-state" id="sec2State">未开始</span>
+    </header>
+    <div class="sec-body"><div id="fpList"></div></div>
+  </section>
+
+  <!-- ═══ 叁 · 行为特征采样 ═══ -->
+  <section class="section locked" id="sec3">
+    <header class="sec-head">
+      <span class="sec-num">叁</span><span class="sec-title">行为特征采样</span>
+      <span class="sec-state" id="sec3State">未开始</span>
+    </header>
+    <div class="sec-body">
+      <div class="traj-card">
+        <div class="traj-head">
+          <div>
+            <h3>指针轨迹采样区</h3>
+            <p>请在此区域内<b>随意移动鼠标 / 滑动手指</b>，并<b>点击或轻点几下</b>，采样约 10 秒。轨迹仅在本机用于行为特征分析，不上传。</p>
+          </div>
+          <div class="traj-live">
+            <span class="tl-item"><b id="trajCount">10.0s</b>剩余时间</span>
+            <span class="tl-item"><b id="trajPts">0</b>采样点</span>
+            <span class="tl-item"><b id="trajSpd">0</b>px/s</span>
+          </div>
+        </div>
+        <div class="traj-wrap">
+          <canvas id="trajCanvas"></canvas>
+          <div class="traj-overlay" id="trajOverlay">
+            <button class="btn btn-primary" id="btnSample">开始采样</button>
+          </div>
+          <span class="chip-ok traj-badge" id="trajBadge" hidden>✓ 采样完成</span>
+        </div>
+      </div>
+      <div id="behList"></div>
+      <div id="behSummaryBox"></div>
+      <div class="btn-row" id="behActions" hidden>
+        <button class="btn" id="btnResample">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 11-1.6-3.9M13.5 1.5v3h-3"/></svg>
+          重新采样
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 肆 · 摄像头核验 ═══ -->
+  <section class="section locked" id="sec4">
+    <header class="sec-head">
+      <span class="sec-num">肆</span><span class="sec-title">摄像头核验</span>
+      <span class="sec-state" id="sec4State">未开始</span>
+    </header>
+    <div class="sec-body">
+      <div class="pane" data-pane="idle">
+        <div class="notice-card" id="fileNotice" hidden>
+          <b>说明：本页面以本地文件（<code>file://</code>）方式打开 —— 属正常分发模式。</b>全部检测、指纹与行为采样功能均可离线完成。唯一需要留意的是：部分移动端浏览器在本地文件模式下不开放实时摄像头权限，若在手机 / 平板上无法调出摄像头，请直接使用「调用系统相机」备用通道完成自拍，流程与效力相同；电脑端不受影响。
+        </div>
+        <div class="cam-idle">
+          <div class="cam-art">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="14" width="30" height="24" rx="2"/><path d="M35 22l8-5v18l-8-5"/><circle cx="19" cy="26" r="6"/><path d="M12 10h14"/>
+            </svg>
+          </div>
+          <h3>需要授权摄像头以完成核验</h3>
+          <p>摄像头为在线考试必备设备。点击下方按钮授权后，系统将检测视频输入设备、确认画面规格，并进入自拍留档环节。</p>
+          <button class="btn btn-primary" id="btnStartCam">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="4" width="10" height="8" rx="1.5"/><path d="M11.5 7l3-2v6l-3-2"/></svg>
+            启动摄像头检测
+          </button>
+          <p class="privacy">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>
+            所有影像仅在本机浏览器内处理，不上传任何数据
+          </p>
+        </div>
+      </div>
+      <div class="pane" data-pane="requesting" hidden>
+        <div class="cam-wait">
+          <span class="c-ic"><svg class="spin" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="9 28" stroke-linecap="round"/></svg></span>
+          正在请求摄像头权限，请在浏览器弹窗中允许访问…
+        </div>
+      </div>
+      <div class="pane" data-pane="ok" hidden>
+        <div class="cam-info" id="camInfo"></div>
+        <div class="cam-select" id="camSelectWrap" hidden>
+          <label for="camSelect">视频输入设备</label>
+          <select id="camSelect"></select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnToShoot">
+            进入自拍留档
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h11M9 3.5L13.5 8 9 12.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="pane" data-pane="error" hidden>
+        <div class="err-card">
+          <h3>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L15 14H1z"/><path d="M8 6v3.5M8 11.8v.2"/></svg>
+            <span id="errTitle">摄像头检测失败</span>
+          </h3>
+          <p id="errDetail"></p>
+          <div class="btn-row">
+            <button class="btn" id="btnRetryCam">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 11-1.6-3.9M13.5 1.5v3h-3"/></svg>
+              重新检测
+            </button>
+            <button class="btn" id="btnSysCam">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="4" width="10" height="8" rx="1.5"/><path d="M11.5 7l3-2v6l-3-2"/></svg>
+              调用系统相机拍照（移动端备用）
+            </button>
+            <button class="btn btn-primary" id="btnSkipCam">无法提供摄像头，标记异常并继续</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 伍 · 自拍留档 ═══ -->
+  <section class="section locked" id="sec5">
+    <header class="sec-head">
+      <span class="sec-num">伍</span><span class="sec-title">自拍留档</span>
+      <span class="sec-state" id="sec5State">未开始</span>
+    </header>
+    <div class="sec-body">
+      <div class="pane" data-pane="stage" hidden>
+        <div class="stage-wrap">
+          <div class="stage" id="stage">
+            <video id="video" autoplay playsinline muted></video>
+            <div class="corners"><i></i><i></i><i></i><i></i></div>
+            <div class="guide"></div>
+            <div class="count-layer" id="countLayer"></div>
+          </div>
+          <div class="stage-bar">
+            <p class="hint">请正对镜头，将面部完整置于虚线提示圈内，点击拍摄后有 3 秒倒计时</p>
+            <div class="actions">
+              <button class="btn btn-primary btn-big" id="btnShoot">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="2.5" fill="currentColor" stroke="none"/></svg>
+                拍摄自拍照
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pane" data-pane="captured" hidden>
+        <div class="photo-panel">
+          <div class="stamp-wrap" id="stampWrap">
+            <figure class="photo-frame">
+              <img id="photoImg" alt="考生自拍留档照片">
+              <figcaption><span>SELF-PORTRAIT ARCHIVE</span><span id="photoCapR"></span></figcaption>
+            </figure>
+            <div class="seal-holder" id="sealHolder"></div>
+          </div>
+          <p class="photo-meta">
+            <span class="c-ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="tick" d="M3.5 8.6l3 3L12.5 5"/></svg></span>
+            <span id="photoMeta">自拍照已生成</span>
+          </p>
+          <div class="photo-actions" id="photoActions">
+            <button class="btn" id="btnRetake">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 11-1.6-3.9M13.5 1.5v3h-3"/></svg>
+              重新拍摄
+            </button>
+            <button class="btn btn-primary" id="btnConfirm">
+              确认留存，生成核验结论
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h11M9 3.5L13.5 8 9 12.5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="pane" data-pane="skipped" hidden>
+        <div class="skip-note">
+          本环节未能留存考生自拍照（摄像头核验异常）。系统已将该项标记为「未通过」，你仍可生成检测报告，报告中将如实记录异常情况，供考务人员人工复核。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 陆 · 核验结论与报告 ═══ -->
+  <section class="section locked" id="sec6">
+    <header class="sec-head">
+      <span class="sec-num">陆</span><span class="sec-title">核验结论与报告</span>
+      <span class="sec-state" id="sec6State">未开始</span>
+    </header>
+    <div class="sec-body report-panel">
+      <span class="lock-tag" id="sec6Lock">完成前序步骤后开放</span>
+      <div class="pane" data-pane="ready" hidden>
+        <div class="verdict-card" id="verdictCard"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-big" id="btnDownload">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M2.5 13.5h11"/></svg>
+            下载检测报告（HTML）
+          </button>
+        </div>
+        <p class="report-note">报告为独立 HTML 文件，包含报考信息、全部检测明细、设备指纹、行为轨迹图与分析结论、自拍留档照片，可在任意浏览器中打开、存档或打印，无需联网。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>本页面所有检测、指纹与影像采集均在本机浏览器内完成，不上传任何数据</span>
+    <span>POWERED BY UA-CH / MEDIADEVICES / WEBGL / CANVAS</span>
+  </footer>
+</div>
+
+<script>
+/* ═══════════════ 工具 ═══════════════ */
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtTime=(d=new Date())=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+function hashStr(s){let h1=5381,h2=52711;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=(h1*33^c)>>>0;h2=(h2^h2<<5^c)>>>0;}return(h1.toString(16).padStart(8,'0')+h2.toString(16).padStart(8,'0'));}
+const fmtHash=h=>h.toUpperCase().match(/.{1,4}/g).join('-');
+
+const IC={
+  pending:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".4"/></svg>',
+  running:'<svg class="spin" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="9 28" stroke-linecap="round"/></svg>',
+  ok:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path class="tick" d="M3.5 8.6l3 3L12.5 5"/></svg>',
+  warn:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l6.3 11.5H1.7z"/><path d="M8 6.5v3M8 11.6v.2"/></svg>',
+  bad:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg>'
+};
+
+const state={
+  reportId:'',student:null,uaData:null,
+  device:null,os:null,browser:null,
+  envResults:[],fpResults:[],
+  fingerprint:'',
+  stream:null,cams:[],camDetail:null,camStatus:'idle',
+  photo:null,trajImg:null,behavior:null,behItems:[],behSummaryPlain:'',behSus:false,verdict:null
+};
+
+function toast(msg,type=''){
+  const t=document.createElement('div');t.className='toast '+type;
+  t.innerHTML=`${type==='warn'?IC.warn:IC.ok}<span>${esc(msg)}</span>`;
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320);},3000);
+}
+function showPane(sec,name){document.querySelectorAll(sec+' .pane').forEach(p=>p.hidden=p.dataset.pane!==name);}
+function setStep(n,s){const el=document.querySelector(`.step[data-step="${n}"]`);el.classList.remove('active','done');if(s)el.classList.add(s);}
+function setSecState(n,txt,cls=''){const el=$('#sec'+n+'State');el.textContent=txt;el.className='sec-state '+cls;}
+function unlockSection(n){
+  const el=$('#sec'+n);if(!el.classList.contains('locked'))return;
+  el.classList.remove('locked');el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),1500);
+}
+
+/* ═══════════════ 被动行为统计（页面级） ═══════════════ */
+const BEH={totalMoves:0,totalDowns:0,scrolls:0,pointerTypes:{},keyTimes:[]};
+function bindPassive(){
+  window.addEventListener('pointermove',()=>{BEH.totalMoves++;},{passive:true});
+  window.addEventListener('pointerdown',e=>{BEH.totalDowns++;const t=e.pointerType||'unknown';BEH.pointerTypes[t]=(BEH.pointerTypes[t]||0)+1;},{passive:true});
+  let lastS=0;
+  window.addEventListener('scroll',()=>{const n=Date.now();if(n-lastS>500){BEH.scrolls++;lastS=n;}},{passive:true});
+  ['inputName','inputCls'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('keydown',()=>BEH.keyTimes.push(performance.now()));});
+}
+
+/* ═══════════════ 高精度环境探测（不轻信 UA） ═══════════════ */
+async function getUAData(){
+  if(navigator.userAgentData&&navigator.userAgentData.getHighEntropyValues){
+    try{return await navigator.userAgentData.getHighEntropyValues(['platform','platformVersion','model','architecture','bitness','fullVersionList']);}catch(e){return null;}
+  }
+  return null;
+}
+function classifyDevice(uaData){
+  const ua=navigator.userAgent;
+  const coarse=matchMedia('(pointer:coarse)').matches;
+  const anyFine=matchMedia('(any-pointer:fine)').matches;
+  const noHover=matchMedia('(hover:none)').matches;
+  const touch=(navigator.maxTouchPoints||0)>0||('ontouchstart' in window);
+  const minDim=Math.min(screen.width,screen.height);
+  const uad=uaData||{};
+  const watchUA=/Watch|Wear|Galaxy Watch/i.test(ua);
+  const uaPhone=/iPhone|iPod/.test(ua)||(/Android/.test(ua)&&/Mobile/.test(ua))||/Windows Phone|IEMobile/.test(ua)||uad.mobile===true;
+  const uaTablet=/iPad/.test(ua)||(/Android/.test(ua)&&!/Mobile/.test(ua))||/Tablet/i.test(ua);
+  const macTouch=navigator.platform==='MacIntel'&&(navigator.maxTouchPoints||0)>1;
+
+  let uaGuess=watchUA?'watch':uaPhone?'phone':uaTablet?'tablet':(macTouch?'tablet':'desktop');
+  let featureGuess='desktop';
+  if(watchUA||(minDim&&minDim<280&&coarse&&noHover))featureGuess='watch';
+  else if(coarse&&noHover&&touch)featureGuess=minDim<=520?'phone':'tablet';
+  else if(touch&&minDim>520&&minDim<=1100&&!anyFine)featureGuess='tablet';
+  else if(macTouch)featureGuess='tablet';
+
+  let cat,basis;
+  if(featureGuess==='watch'){cat='watch';basis='UA 或超小屏幕特征';}
+  else if(featureGuess==='phone'){cat='phone';basis='触摸 + 无悬停 + 小屏特征（不依赖 UA）';}
+  else if(featureGuess==='tablet'){cat='tablet';basis=macTouch?'Macintosh 平台 + 多点触控（iPad 桌面模式 UA）':'触摸 + 无悬停特征（不依赖 UA）';}
+  else if(uaGuess==='phone'&&touch){cat='phone';basis='UA 声明 + 触摸能力（外接了指针设备）';}
+  else if(uaGuess==='tablet'&&touch){cat='tablet';basis='UA 声明 + 触摸能力';}
+  else if(uaGuess==='phone'||uaGuess==='tablet'){cat='desktop';basis='无触摸 + 精确指针（与 UA 声明不符，以实测特征为准）';}
+  else{cat='desktop';basis='精确指针 + 悬停能力（不依赖 UA）';}
+
+  return{cat,label:{watch:'智能手表 / 穿戴设备',phone:'智能手机',tablet:'平板电脑',desktop:'台式电脑 / 笔记本'}[cat],basis,uaGuess,featureGuess,conflict:uaGuess!==featureGuess};
+}
+function modelFromUA(ua){
+  const m=ua.match(/Android[^;)]*;\s*([^;)]+?)(?:\s+Build\/[^;)]*)?\s*(?:\)|;)/);
+  if(m){const s=m[1].trim();if(s&&!/windows|macintosh|linux x86|like mac/i.test(s))return s;}
+  return '';
+}
+function detectOS(uaData){
+  const ua=navigator.userAgent;
+  const macTouch=navigator.platform==='MacIntel'&&(navigator.maxTouchPoints||0)>1;
+  if(uaData&&uaData.platform){
+    const p=uaData.platform,pv=String(uaData.platformVersion||''),maj=parseInt(pv,10)||0;
+    if(p==='Windows')return{os:maj>=13?'Windows 11':'Windows 10',model:''};
+    if(p==='Android')return{os:'Android'+(pv?' '+pv.split('.').slice(0,2).join('.'):''),model:uaData.model||''};
+    if(p==='Chrome OS')return{os:'ChromeOS',model:''};
+    if(p==='macOS')return{os:'macOS'+(pv?' '+pv.split('.').slice(0,2).join('.'):''),model:''};
+    if(p==='iOS')return{os:'iOS'+(pv?' '+pv.split('.').slice(0,2).join('.'):''),model:''};
+  }
+  if(/HarmonyOS|OpenHarmony/i.test(ua))return{os:'HarmonyOS（鸿蒙）',model:modelFromUA(ua)};
+  if(macTouch)return{os:'iPadOS（桌面模式 UA，版本未知）',model:''};
+  if(/iPad|iPod|iPhone/.test(ua)){const m=ua.match(/OS (\d+(?:_\d+)+)/);return{os:(/iPad/.test(ua)?'iPadOS':'iOS')+(m?' '+m[1].replace(/_/g,'.'):''),model:''};}
+  const am=ua.match(/Android[ \/]?([\d.]+)?/);
+  if(am)return{os:'Android'+(am[1]?' '+am[1].split('.').slice(0,2).join('.'):''),model:modelFromUA(ua)};
+  if(/Windows NT 10/.test(ua))return{os:'Windows 10 / 11',model:''};
+  if(/Windows NT 6\.3/.test(ua))return{os:'Windows 8.1',model:''};
+  if(/Windows NT 6\.1/.test(ua))return{os:'Windows 7',model:''};
+  if(/Windows/.test(ua))return{os:'Windows',model:''};
+  const mm=ua.match(/Mac OS X (\d+(?:[._]\d+)+)/);
+  if(mm)return{os:'macOS '+mm[1].replace(/_/g,'.'),model:''};
+  if(/CrOS/.test(ua))return{os:'ChromeOS',model:''};
+  const lm=ua.match(/Ubuntu|Fedora|Debian/);
+  if(lm)return{os:'Linux（'+lm[0]+'）',model:''};
+  if(/Linux/.test(ua))return{os:'Linux',model:''};
+  return{os:'未知系统',model:''};
+}
+function detectBrowser(uaData){
+  if(uaData&&uaData.fullVersionList){
+    const skip=/^(Chromium|Not A Brand|Not A;Brand|Not\.A\/Brand|Not;A=Brand|Not A-Brand|Not ABrand|Generic|Generic Android|Generic Android Tablet)$/i;
+    const b=uaData.fullVersionList.find(x=>!skip.test(x.brand));
+    if(b)return{name:b.brand,ver:b.version,engine:'Blink',src:'UA-CH'};
+  }
+  const ua=navigator.userAgent,m=re=>ua.match(re);
+  if(m(/Edg\/([\d.]+)/))return{name:'Microsoft Edge',ver:m(/Edg\/([\d.]+)/)[1],engine:'Blink',src:''};
+  if(m(/OPR\/([\d.]+)/))return{name:'Opera',ver:m(/OPR\/([\d.]+)/)[1],engine:'Blink',src:''};
+  if(m(/Firefox\/([\d.]+)/))return{name:'Mozilla Firefox',ver:m(/Firefox\/([\d.]+)/)[1],engine:'Gecko',src:''};
+  if(m(/Chrome\/([\d.]+)/))return{name:'Google Chrome',ver:m(/Chrome\/([\d.]+)/)[1],engine:'Blink',src:''};
+  if(m(/Version\/([\d.]+).*Safari/))return{name:'Apple Safari',ver:m(/Version\/([\d.]+)/)[1],engine:'WebKit',src:''};
+  return{name:'未知浏览器',ver:'—',engine:'未知',src:''};
+}
+
+/* ═══════════════ 指纹采集器 ═══════════════ */
+function glInfo(){
+  try{
+    let gl=null,webgl2=false;
+    const c2=document.createElement('canvas');const g2=c2.getContext('webgl2');
+    if(g2){webgl2=true;gl=g2;}
+    else{const c1=document.createElement('canvas');gl=c1.getContext('webgl')||c1.getContext('experimental-webgl');}
+    if(!gl)return null;
+    const dbg=gl.getExtension('WEBGL_debug_renderer_info');
+    return{
+      renderer:dbg?gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),
+      vendor:dbg?gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL):gl.getParameter(gl.VENDOR),
+      version:gl.getParameter(gl.VERSION),webgl2,
+      maxTex:gl.getParameter(gl.MAX_TEXTURE_SIZE),
+      exts:(gl.getSupportedExtensions()||[]).length
+    };
+  }catch(e){return null;}
+}
+function canvasFP(){
+  try{
+    const c=document.createElement('canvas');c.width=240;c.height=60;
+    const x=c.getContext('2d');
+    x.textBaseline='top';x.font='14px "Arial"';
+    x.fillStyle='#f60';x.fillRect(0,0,100,30);
+    x.fillStyle='#069';x.fillText('设备核验 exam 🎓 米',2,4);
+    x.fillStyle='rgba(102,204,0,.7)';x.fillText('设备核验 exam 🎓 米',4,7);
+    x.strokeStyle='rgba(120,60,20,.8)';x.beginPath();x.arc(60,30,22,0,Math.PI*1.6);x.stroke();
+    return fmtHash(hashStr(c.toDataURL()));
+  }catch(e){return '不可读取';}
+}
+async function audioFP(){
+  try{
+    const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    if(!OAC)return null;
+    const ctx=new OAC(1,44100,44100);
+    const osc=ctx.createOscillator();osc.type='triangle';osc.frequency.value=10000;
+    const comp=ctx.createDynamicsCompressor();
+    comp.threshold.value=-50;comp.knee.value=40;comp.ratio.value=12;comp.attack.value=0;comp.release.value=.25;
+    osc.connect(comp);comp.connect(ctx.destination);osc.start(0);
+    const buf=await ctx.startRendering();
+    const d=buf.getChannelData(0);let sum=0;
+    for(let i=4500;i<5000;i++)sum+=Math.abs(d[i]);
+    return sum;
+  }catch(e){return null;}
+}
+const FONT_LIST=['Arial','Arial Black','Arial Narrow','Calibri','Cambria','Candara','Comic Sans MS','Consolas','Constantia','Corbel','Courier New','Ebrima','Franklin Gothic Medium','FangSong','Gabriola','Gadugi','Georgia','Impact','Ink Free','Javanese Text','Lucida Console','Lucida Sans Unicode','Malgun Gothic','Marlett','Microsoft Himalaya','Microsoft JhengHei','Microsoft New Tai Lue','Microsoft PhagsPa','Microsoft Sans Serif','Microsoft Tai Le','Microsoft YaHei','MingLiU-ExtB','Mongolian Baiti','MS Gothic','MV Boli','Myanmar Text','Nirmala UI','Palatino Linotype','Segoe MDL2 Assets','Segoe Print','Segoe Script','Segoe UI','Segoe UI Emoji','SimSun','Sitka','Sylfaen','Symbol','Tahoma','Times New Roman','Trebuchet MS','Verdana','Webdings','Wingdings','Yu Gothic'];
+function detectFonts(){
+  try{
+    const c=document.createElement('canvas');const x=c.getContext('2d');
+    const test='mmmwwwiiimmmwwwiii米字AB12';
+    x.font='72px monospace';const base=x.measureText(test).width;
+    const found=FONT_LIST.filter(f=>{x.font=`72px "${f}", monospace`;const w=x.measureText(test).width;return w!==base&&w>0;});
+    return{n:found.length,total:FONT_LIST.length,found};
+  }catch(e){return{n:0,total:FONT_LIST.length,found:[]};}
+}
+function voicesCount(){
+  return new Promise(res=>{
+    if(!('speechSynthesis' in window))return res(null);
+    const v=speechSynthesis.getVoices();
+    if(v&&v.length)return res(v.length);
+    let done=false;const fin=n=>{if(!done){done=true;res(n);}};
+    const t=setTimeout(()=>fin((speechSynthesis.getVoices()||[]).length||0),400);
+    speechSynthesis.addEventListener('voiceschanged',()=>{clearTimeout(t);fin(speechSynthesis.getVoices().length);},{once:true});
+  });
+}
+async function batteryInfo(){
+  if(!navigator.getBattery)return{supported:false};
+  try{const b=await navigator.getBattery();return{supported:true,level:Math.round(b.level*100),charging:b.charging};}catch(e){return{supported:false};}
+}
+async function storageInfo(){
+  if(navigator.storage&&navigator.storage.estimate){
+    try{const e=await navigator.storage.estimate();return `${(e.quota/1073741824).toFixed(1)} GB（已用 ${((e.usage||0)/1048576).toFixed(1)} MB）`;}catch(err){}
+  }
+  return null;
+}
+async function keyboardLayout(){
+  if(navigator.keyboard&&navigator.keyboard.getLayoutMap){
+    try{
+      const m=await navigator.keyboard.getLayoutMap();
+      const q=m.get('KeyQ')||'',y=m.get('KeyY')||'';
+      let l='QWERTY';if(q==='a')l='AZERTY';else if(y==='z')l='QWERTZ';
+      return l+' 布局（检测到物理键盘）';
+    }catch(e){}
+  }
+  return null;
+}
+function gamepadInfo(){
+  if(!navigator.getGamepads)return'浏览器不支持 Gamepad API';
+  try{const gs=[...navigator.getGamepads()].filter(Boolean);return gs.length?`已连接 ${gs.length} 个手柄`:'支持，当前无设备连接';}catch(e){return'不可读取';}
+}
+function pluginInfo(){
+  try{
+    const ps=[...(navigator.plugins||[])];
+    if(!ps.length)return'未检测到插件（0 个 —— 移动端常见）';
+    return `${ps.length} 个：${ps.slice(0,3).map(p=>p.name).join('、')}${ps.length>3?' 等':''}`;
+  }catch(e){return'不可读取';}
+}
+function periphAPIInfo(){
+  const apis=['bluetooth','usb','hid','serial'].filter(k=>navigator[k]);
+  return apis.length?'支持 '+apis.map(s=>s.toUpperCase()).join(' / ')+'（Chromium 桌面常见）':'均不支持';
+}
+
+/* ═══════════════ 行渲染 ═══════════════ */
+function rowHTML(item){
+  return `<div class="crow" id="row-${item.key}">
+    <span class="c-name">${item.label}</span><span class="c-dots"></span>
+    <span class="c-val"><span class="val-txt"><span class="pending-txt">检测中…</span></span></span>
+    <span class="c-ic">${IC.pending}</span>
+  </div>`;
+}
+function setRow(item,phase){
+  const row=document.getElementById('row-'+item.key);if(!row)return;
+  const ic=row.querySelector('.c-ic'),txt=row.querySelector('.val-txt');
+  if(phase==='running')ic.innerHTML=IC.running;
+  if(phase==='done'){
+    const st=item.status||'ok';
+    ic.innerHTML=st==='bad'?IC.bad:st==='warn'?IC.warn:IC.ok;
+    ic.classList.toggle('warn',st==='warn');
+    ic.classList.toggle('badc',st==='bad');
+    if(st==='ok')row.classList.add('ok');
+    txt.innerHTML=esc(item.value);
+  }
+}
+async function renderGroups(container,groups){
+  for(const g of groups){
+    const gl=document.createElement('p');gl.className='glabel';gl.textContent=g.label;container.appendChild(gl);
+    for(const it of g.items){
+      container.insertAdjacentHTML('beforeend',rowHTML(it));
+      const row=container.lastElementChild;
+      await sleep(40);row.classList.add('in');
+      await sleep(90);setRow(it,'running');
+      await sleep(130+Math.random()*90);setRow(it,'done');
+    }
+    await sleep(70);
+  }
+}
+
+/* ═══════════════ 壹 · 环境检测 ═══════════════ */
+async function runEnvCheck(){
+  setSecState(1,'检测中','running');
+  const dev=classifyDevice(state.uaData);state.device=dev;
+  const os=detectOS(state.uaData);state.os=os;
+  const br=detectBrowser(state.uaData);state.browser=br;
+  const model=(state.uaData&&state.uaData.model)||os.model||'';
+  const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  const off=-new Date().getTimezoneOffset()/60;
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'未知';
+  const secure=window.isSecureContext;
+  const isFile=location.protocol==='file:';
+  const ratio=Math.round((innerWidth*innerHeight)/(screen.width*screen.height)*100);
+  const groups=[
+    {label:'设备与系统',items:[
+      {key:'dtype',label:'设备类型',value:dev.label+(dev.conflict?'（与 UA 声明不符）':''),status:dev.cat==='desktop'?'ok':dev.cat==='tablet'?'warn':'bad'},
+      {key:'dbasis',label:'判定依据',value:dev.basis,status:'ok'},
+      {key:'uaconf',label:'UA 一致性',value:dev.conflict?'不一致 —— 外接指针设备，或 UA 已被修改':'一致',status:dev.conflict?'warn':'ok'},
+      ...(model?[{key:'model',label:'设备型号',value:model,status:'ok'}]:[]),
+      {key:'os',label:'操作系统',value:os.os,status:'ok'},
+      {key:'arch',label:'处理器架构',value:(state.uaData&&state.uaData.architecture)?`${state.uaData.architecture}${state.uaData.bitness?' · '+state.uaData.bitness+' 位':''}`:'不可读取（非 Chromium 内核常见）',status:'ok'},
+      {key:'cpu',label:'处理器核心',value:navigator.hardwareConcurrency?navigator.hardwareConcurrency+' 逻辑核心':'不可读取',status:'ok'},
+      {key:'mem',label:'设备内存',value:navigator.deviceMemory?'约 '+navigator.deviceMemory+' GB':'不可读取（Safari 常见）',status:'ok'},
+      {key:'touch',label:'触摸能力',value:(navigator.maxTouchPoints||0)>0?`支持（${navigator.maxTouchPoints} 点触控）`:'不支持（键鼠环境）',status:'ok'},
+    ]},
+    {label:'浏览器与显示',items:[
+      {key:'browser',label:'浏览器及版本',value:`${br.name} ${br.ver}`,status:'ok'},
+      {key:'engine',label:'渲染内核',value:`${br.engine}${br.src?' · '+br.src:''}`,status:'ok'},
+      {key:'screen',label:'屏幕 / 视口',value:`${screen.width} × ${screen.height} · 视口 ${innerWidth} × ${innerHeight}`,status:'ok'},
+      {key:'dpr',label:'色深 / 像素比',value:`${screen.colorDepth} 位 · ${window.devicePixelRatio}x`,status:'ok'},
+      {key:'ratio',label:'窗口占屏比',value:ratio+'%'+(ratio>=95?'（全屏 / 移动设备特征）':ratio<=70?'（窗口化桌面特征）':''),status:'ok'},
+      {key:'orient',label:'屏幕方向',value:matchMedia('(orientation: portrait)').matches?'竖屏':'横屏',status:'ok'},
+    ]},
+    {label:'运行环境',items:[
+      {key:'net',label:'网络状态',value:(navigator.onLine?'在线':'离线')+(conn&&conn.effectiveType?` · ${conn.effectiveType.toUpperCase()}${conn.downlink?' · 约 '+conn.downlink+' Mbps':''}`:''),status:'ok'},
+      {key:'tz',label:'时区',value:`${tz}（UTC${off>=0?'+':''}${off}）`,status:'ok'},
+      {key:'lang',label:'首选语言',value:(navigator.languages?navigator.languages.slice(0,3).join('、'):navigator.language),status:'ok'},
+      {key:'cookie',label:'Cookie',value:navigator.cookieEnabled?'已启用':'未启用',status:navigator.cookieEnabled?'ok':'warn'},
+      {key:'secure',label:'安全上下文',value:isFile?'本地文件模式（离线核验，正常）':(secure?'是（HTTPS / localhost）':'否 —— 摄像头等 API 将不可用'),status:(isFile||secure)?'ok':'warn'},
+      {key:'rtc',label:'摄像头 API',value:(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持',status:(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'ok':'warn'},
+    ]},
+  ];
+  state.envResults=[];groups.forEach(g=>g.items.forEach(it=>{it.group=g.label;state.envResults.push(it);}));
+  await sleep(350);
+  await renderGroups($('#envList'),groups);
+  $('#envList').insertAdjacentHTML('beforeend',`<div class="ua-block" style="opacity:0;transition:opacity .4s"><h4>USER AGENT / 平台声明（仅作比对，不作为判定依据）</h4><p>${esc(navigator.userAgent)}</p><p class="fp">PLATFORM&nbsp;&nbsp;${esc(navigator.platform||'—')}${state.uaData&&state.uaData.platformVersion?' · UA-CH '+esc(state.uaData.platformVersion):''}</p></div>`);
+  await sleep(60);const ub=$('#envList .ua-block');if(ub)ub.style.opacity=1;
+  setSecState(1,'已完成','done');setStep(2,'done');setStep(3,'active');
+}
+
+/* ═══════════════ 贰 · 指纹检测 ═══════════════ */
+async function runFingerprintCheck(){
+  setSecState(2,'检测中','running');
+  const gl=glInfo(),cfp=canvasFP();
+  const afp=await audioFP();
+  const fonts=detectFonts();
+  const voices=await voicesCount();
+  const bat=await batteryInfo();
+  const sto=await storageInfo();
+  const kb=await keyboardLayout();
+  const anyFine=matchMedia('(any-pointer:fine)').matches;
+  const groups=[
+    {label:'图形与渲染',items:[
+      {key:'glr',label:'WebGL 渲染器',value:gl?gl.renderer:'不可读取',status:'ok'},
+      {key:'glv',label:'GPU 厂商',value:gl?gl.vendor:'不可读取',status:'ok'},
+      {key:'glver',label:'WebGL 版本',value:gl?`${gl.version} · ${gl.webgl2?'支持 WebGL2':'仅 WebGL1'}`:'不可读取',status:'ok'},
+      {key:'gltex',label:'最大纹理尺寸',value:gl?`${gl.maxTex} × ${gl.maxTex}`:'—',status:'ok'},
+      {key:'glext',label:'WebGL 扩展',value:gl?gl.exts+' 个':'—',status:'ok'},
+    ]},
+    {label:'环境指纹',items:[
+      {key:'cfp',label:'Canvas 渲染指纹',value:cfp,status:'ok'},
+      {key:'afp',label:'音频栈指纹',value:afp===null?'不可读取':afp.toFixed(6),status:'ok'},
+      {key:'fonts',label:'系统字体探测',value:`识别 ${fonts.n} / ${fonts.total} 种${fonts.n>=25?'（桌面系统特征明显）':fonts.n>0&&fonts.n<=12?'（移动端 / 精简系统特征）':''}`,status:'ok'},
+      {key:'voices',label:'语音合成音色',value:voices===null?'不支持（Safari / 部分移动端）':voices+' 种',status:'ok'},
+    ]},
+    {label:'插件与外设',items:[
+      {key:'plugins',label:'浏览器插件',value:pluginInfo(),status:'ok'},
+      {key:'mouse',label:'精确指针（鼠标）',value:anyFine?'检测到 —— 存在鼠标 / 触控板':'未检测到（以触摸为主）',status:'ok'},
+      {key:'pad',label:'游戏手柄',value:gamepadInfo(),status:'ok'},
+      {key:'periph',label:'外设交互 API',value:periphAPIInfo(),status:'ok'},
+      {key:'sensor',label:'运动传感器',value:(('DeviceOrientationEvent' in window)||('Accelerometer' in window))?'支持（加速度 / 陀螺仪 —— 移动设备特征）':'不支持（桌面常见）',status:'ok'},
+      {key:'bat',label:'电池状态',value:bat.supported?`电量 ${bat.level}% · ${bat.charging?'充电中':'使用电池'}`:'不可读取（Safari / Firefox 常见）',status:'ok'},
+      {key:'sto',label:'存储配额',value:sto||'不可读取',status:'ok'},
+      {key:'kb',label:'键盘布局',value:kb||'不可读取（移动端 / 非 Chromium 常见）',status:'ok'},
+    ]},
+    {label:'偏好与隐私',items:[
+      {key:'dark',label:'深色模式偏好',value:matchMedia('(prefers-color-scheme: dark)').matches?'深色':'浅色 / 跟随系统',status:'ok'},
+      {key:'motion',label:'减弱动效',value:matchMedia('(prefers-reduced-motion: reduce)').matches?'开启':'关闭',status:'ok'},
+      {key:'dnt',label:'Do Not Track',value:navigator.doNotTrack==null?'未设置':navigator.doNotTrack==='1'?'开启（请勿追踪）':'关闭',status:'ok'},
+      {key:'gpc',label:'全球隐私控制',value:('globalPrivacyControl' in navigator)?(navigator.globalPrivacyControl?'开启':'关闭'):'未声明',status:'ok'},
+    ]},
+  ];
+  state.fpResults=[];groups.forEach(g=>g.items.forEach(it=>{it.group=g.label;state.fpResults.push(it);}));
+  await renderGroups($('#fpList'),groups);
+  const tz2=Intl.DateTimeFormat().resolvedOptions().timeZone||'';
+  state.fingerprint=fmtHash(hashStr([navigator.userAgent,screen.width,screen.height,screen.colorDepth,window.devicePixelRatio,tz2,navigator.language,gl?gl.renderer:'',cfp,afp||'',fonts.found.join(','),voices,navigator.plugins?navigator.plugins.length:0,navigator.maxTouchPoints||0,navigator.hardwareConcurrency||0,navigator.deviceMemory||0,gl?gl.maxTex:0,state.reportId].join('|')));
+  $('#fpList').insertAdjacentHTML('beforeend',`<div class="ua-block" style="opacity:0;transition:opacity .4s"><h4>COMPOSITE FINGERPRINT / 综合设备指纹</h4><p class="fp">${state.fingerprint}</p><p style="margin-top:6px">由 UA、屏幕、GPU、Canvas / 音频指纹、字体集等 ${state.fpResults.length+8} 项信号在本机哈希生成，用于比对设备一致性。</p></div>`);
+  const fb=$('#fpList .ua-block');if(fb)fb.style.opacity=1;
+  setSecState(2,'已完成','done');setStep(3,'done');setStep(4,'active');
+  unlockSection(3);
+  toast('环境与指纹检测完成，请完成行为特征采样');
+  setTimeout(()=>$('#sec3').scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+
+/* ═══════════════ 叁 · 行为采样 ═══════════════ */
+function typingStats(){
+  const t=BEH.keyTimes;if(t.length<4)return null;
+  const iv=[];for(let i=1;i<t.length;i++){const d=t[i]-t[i-1];if(d<2000)iv.push(d);}
+  if(iv.length<2)return null;
+  const mean=iv.reduce((a,b)=>a+b,0)/iv.length;
+  const sd=Math.sqrt(iv.reduce((s,v)=>s+(v-mean)*(v-mean),0)/iv.length);
+  return{n:t.length,mean,sd};
+}
+const PTNAME={mouse:'鼠标',touch:'触摸',pen:'手写笔'};
+function trajSnapshot(pts,clicks,W,H){
+  try{
+    const w=560,h=Math.max(Math.round(560*H/W),120);
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    const x=c.getContext('2d');
+    x.fillStyle='#16130f';x.fillRect(0,0,w,h);
+    x.strokeStyle='rgba(246,243,234,.06)';x.lineWidth=1;
+    for(let gx=0;gx<w;gx+=44){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,h);x.stroke();}
+    for(let gy=0;gy<h;gy+=44){x.beginPath();x.moveTo(0,gy);x.lineTo(w,gy);x.stroke();}
+    const sx=w/W,sy=h/H;
+    x.strokeStyle='rgba(232,201,138,.85)';x.lineWidth=1.4;x.lineCap='round';
+    x.beginPath();let pen=false;
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1],b=pts[i];
+      if(b.t-a.t>400){pen=false;continue;}
+      if(!pen){x.moveTo(a.x*sx,a.y*sy);pen=true;}
+      x.lineTo(b.x*sx,b.y*sy);
+    }
+    x.stroke();
+    clicks.forEach(c2=>{x.save();x.translate(c2.x*sx,c2.y*sy);x.rotate(Math.PI/4);x.strokeStyle='rgba(226,122,90,.95)';x.lineWidth=1.6;x.strokeRect(-5,-5,10,10);x.restore();});
+    return c.toDataURL('image/jpeg',0.75);
+  }catch(e){return null;}
+}
+let sampRAF=null;
+function startSampling(){
+  $('#trajOverlay').classList.add('off');
+  $('#trajBadge').hidden=true;
+  $('#behActions').hidden=true;
+  $('#behList').innerHTML='';
+  $('#behSummaryBox').innerHTML='';
+  state.behSummaryPlain='';state.behSus=false;
+  const cv=$('#trajCanvas');
+  const rect=cv.getBoundingClientRect();
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const W=Math.max(rect.width,300),H=Math.max(rect.height,220);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const grid=()=>{ctx.strokeStyle='rgba(246,243,234,.05)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}};
+  ctx.fillStyle='#16130f';ctx.fillRect(0,0,W,H);grid();
+  const pts=[],clicks=[];
+  const t0=performance.now(),DUR=10000,MIN=60,MAXD=22000;
+  let finished=false;
+  const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+  const onMove=e=>{const p=pos(e);pts.push({x:p.x,y:p.y,t:performance.now(),type:e.pointerType||'mouse'});};
+  const onDown=e=>{const p=pos(e);clicks.push({x:p.x,y:p.y,t:performance.now()});try{cv.setPointerCapture(e.pointerId);}catch(_){}};
+  cv.addEventListener('pointermove',onMove,{passive:true});
+  cv.addEventListener('pointerdown',onDown);
+  const liveSpeed=()=>{const now=performance.now();let d=0,dt=0;
+    for(let i=pts.length-1;i>0;i--){const b=pts[i],a=pts[i-1];if(now-b.t>1000)break;if(b.t-a.t>250)continue;d+=Math.hypot(b.x-a.x,b.y-a.y);dt+=b.t-a.t;}
+    return dt>0?Math.round(d/dt*1000):0;};
+  const loop=()=>{
+    if(finished)return;
+    const now=performance.now();
+    ctx.fillStyle='rgba(22,19,15,0.05)';ctx.fillRect(0,0,W,H);grid();
+    ctx.lineCap='round';
+    const recent=pts.filter(p=>now-p.t<1500);
+    for(let i=1;i<recent.length;i++){
+      const a=recent[i-1],b=recent[i];
+      if(b.t-a.t>160||Math.hypot(b.x-a.x,b.y-a.y)>W)continue;
+      const age=(now-b.t)/1500;
+      const v=Math.hypot(b.x-a.x,b.y-a.y)/Math.max(b.t-a.t,1)*1000;
+      const hue=v>1100?6:v>500?26:44;
+      ctx.strokeStyle=`hsla(${hue},72%,${v>1100?60:68}%,${(1-age)*.9})`;
+      ctx.lineWidth=v>1100?2.8:1.7;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+    clicks.forEach(c=>{const age=(now-c.t)/1800;if(age>=1)return;
+      ctx.save();ctx.translate(c.x,c.y);ctx.rotate(Math.PI/4);
+      ctx.strokeStyle=`rgba(226,122,90,${1-age})`;ctx.lineWidth=1.8;
+      ctx.strokeRect(-5.5,-5.5,11,11);ctx.restore();});
+    $('#trajCount').textContent=Math.max(0,(DUR-(now-t0))/1000).toFixed(1)+'s';
+    $('#trajPts').textContent=pts.length;
+    $('#trajSpd').textContent=liveSpeed();
+    sampRAF=requestAnimationFrame(loop);
+  };
+  sampRAF=requestAnimationFrame(loop);
+  const timer=setInterval(()=>{
+    const el=performance.now()-t0;
+    if((el>=DUR&&pts.length>=MIN)||el>=MAXD){clearInterval(timer);finish();}
+  },150);
+  function finish(){
+    if(finished)return;finished=true;
+    cancelAnimationFrame(sampRAF);
+    cv.removeEventListener('pointermove',onMove);
+    cv.removeEventListener('pointerdown',onDown);
+    const dur=(performance.now()-t0)/1000;
+    if(pts.length<10){
+      toast('未采集到足够轨迹，请重试','warn');
+      const ov=$('#trajOverlay');ov.classList.remove('off');ov.innerHTML='';
+      const b=document.createElement('button');b.className='btn btn-primary';b.textContent='重新开始采样';
+      b.addEventListener('click',startSampling);ov.appendChild(b);
+      return;
+    }
+    /* —— 基础指标 —— */
+    let dist=0,vmax=0;const sp=[];let dirCh=0,lastAng=null;
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1],b=pts[i];const dx=b.x-a.x,dy=b.y-a.y;const dt=b.t-a.t;
+      if(dt>300)continue;
+      const d=Math.hypot(dx,dy);dist+=d;
+      if(dt>0){const v=d/dt*1000;sp.push(v);vmax=Math.max(vmax,v);}
+      const ang=Math.atan2(dy,dx);
+      if(lastAng!==null&&Math.abs(ang-lastAng)>0.35)dirCh++;
+      lastAng=ang;
+    }
+    const avg=sp.length?sp.reduce((s,v)=>s+v,0)/sp.length:0;
+    const types={};pts.forEach(p=>types[p.type]=(types[p.type]||0)+1);
+    const typeMix=Object.entries(types).map(([k,v])=>(PTNAME[k]||k)+' '+Math.round(v/pts.length*100)+'%').join(' / ');
+    const tp=typingStats();
+    state.trajImg=trajSnapshot(pts,clicks,W,H);
+
+    /* —— 行为特征自动判读 —— */
+    const net=Math.hypot(pts[pts.length-1].x-pts[0].x,pts[pts.length-1].y-pts[0].y);
+    const straightness=dist>0?net/dist:0;
+    const speedOk=sp.length>=10&&avg>0;
+    const cv2=speedOk?Math.sqrt(sp.reduce((s,v)=>s+(v-avg)*(v-avg),0)/sp.length)/avg:0;
+    const pulse=speedOk?vmax/avg:0;
+    const touchPct=Math.round((types.touch||0)/pts.length*100);
+    const precisePct=100-touchPct;
+    const dirRate=dirCh/Math.max(dur,.1);
+
+    const inputMode=touchPct>=85?'触摸滑动':precisePct>=85?'鼠标 / 触控板':'触摸与鼠标混合';
+    const moveShort=!speedOk?'无法判读':pulse>=6?'脉冲式加速':pulse<=2.5?'持续平滑移动':'常规混合';
+    const movePattern=!speedOk?'无法判读（速度样本不足）':pulse>=6?'脉冲式加速（手指快速轻扫的典型特征）':pulse<=2.5?'持续平滑移动（鼠标 / 触控板的匀速特征）':'常规混合型';
+    const curveTxt=dirRate>=0.8?'轨迹自然弯曲，符合人类手部操作':dirRate>=0.25?'轨迹较为平直，但仍含自然弯曲':'轨迹过于平直';
+    const consistTxt=(()=>{
+      if(state.device.cat==='desktop'&&touchPct>=95)return '存在差异（或为触屏笔记本 / 模拟环境，供参考）';
+      if((state.device.cat==='phone'||state.device.cat==='tablet')&&precisePct>=95)return '存在差异（检测到外接鼠标 / 触控板）';
+      return '一致';
+    })();
+    const susNotes=[];
+    if(speedOk&&cv2<0.12&&sp.length>30)susNotes.push('移动速度高度恒定');
+    if(dirRate<0.25&&pts.length>150)susNotes.push('方向几乎无变化');
+    if(tp&&tp.sd<6&&tp.n>=6)susNotes.push('击键间隔近乎一致');
+    const sus=susNotes.length>0;
+    const humanTxt=sus?`存在自动化嫌疑（${susNotes.join('、')}），建议人工复核`:'符合自然人类操作特征';
+
+    state.behavior={dur,n:pts.length,dist,avg,vmax,dirCh,clicks:clicks.length,typeMix,cv:cv2,pulse,straightness,touchPct,dirRate,sus,susNotes};
+    state.behSummaryPlain=`操作方式以${inputMode}为主（触摸 ${touchPct}% / 精确指针 ${precisePct}%）；移动模式为${moveShort}；${curveTxt}；综合判读：行为特征${humanTxt}；与设备类型「${state.device.label}」的判定${consistTxt}。`;
+    state.behSus=sus;
+
+    const pt2=Object.entries(BEH.pointerTypes).map(([k,v])=>(PTNAME[k]||k)+' '+v+' 次').join(' · ')||'—';
+    const groups=[
+      {label:'本次采样结果',items:[
+        {key:'b1',label:'采样时长',value:dur.toFixed(1)+' 秒',status:'ok'},
+        {key:'b2',label:'采样点数',value:pts.length+' 个指针事件',status:'ok'},
+        {key:'b3',label:'指针类型',value:typeMix,status:'ok'},
+        {key:'b4',label:'移动总距离',value:Math.round(dist).toLocaleString()+' px',status:'ok'},
+        {key:'b5',label:'平均 / 峰值速度',value:Math.round(avg)+' / '+Math.round(vmax)+' px/s',status:'ok'},
+        {key:'b6',label:'方向变化',value:dirCh+' 次（约 '+dirRate.toFixed(1)+' 次/秒）',status:'ok'},
+        {key:'b7',label:'点击 / 轻点',value:clicks.length+' 次',status:'ok'},
+      ]},
+      {label:'输入节奏（信息登记环节）',items:[
+        {key:'b8',label:'击键样本',value:tp?tp.n+' 次':'样本不足',status:'ok'},
+        {key:'b9',label:'平均击键间隔',value:tp?Math.round(tp.mean)+' ms':'—',status:'ok'},
+        {key:'b10',label:'间隔波动',value:tp?'± '+Math.round(tp.sd)+' ms':'—',status:'ok'},
+      ]},
+      {label:'全程交互统计',items:[
+        {key:'b11',label:'页面交互累计',value:`指针移动 ${BEH.totalMoves} 次 · 按下 ${BEH.totalDowns} 次 · 滚动 ${BEH.scrolls} 次`,status:'ok'},
+        {key:'b12',label:'全程指针构成',value:pt2,status:'ok'},
+      ]},
+      {label:'行为特征分析（自动判读）',items:[
+        {key:'a1',label:'操作方式判读',value:`${inputMode}（触摸 ${touchPct}% · 精确指针 ${precisePct}%）`,status:'ok'},
+        {key:'a2',label:'移动模式判读',value:`${movePattern}，峰均速度比 ${speedOk?pulse.toFixed(1):'—'}`,status:'ok'},
+        {key:'a3',label:'轨迹形态判读',value:`${curveTxt}（方向变化 ${dirRate.toFixed(1)} 次/秒 · 直度比 ${straightness.toFixed(2)}）`,status:'ok'},
+        {key:'a4',label:'速度波动分析',value:speedOk?(cv2>=0.12?`变异系数 ${cv2.toFixed(2)}，速度自然起伏，符合人类操作`:`变异系数 ${cv2.toFixed(2)}，速度高度恒定 —— 疑似自动化输入`):'速度样本不足，未做判读',status:(speedOk&&cv2<0.12)?'warn':'ok'},
+        {key:'a5',label:'击键节奏分析',value:tp?((tp.sd<6&&tp.n>=6)?`平均 ${Math.round(tp.mean)} ms，波动 ±${Math.round(tp.sd)} ms —— 近乎等间隔，疑似脚本输入`:`平均 ${Math.round(tp.mean)} ms，波动 ±${Math.round(tp.sd)} ms，存在自然波动，符合人类输入`):'击键样本不足（登记环节输入少于 4 次）',status:(tp&&tp.sd<6&&tp.n>=6)?'warn':'ok'},
+        {key:'a6',label:'与设备类型交叉比对',value:`设备判定为「${state.device.label}」，行为特征与之${consistTxt}`,status:consistTxt==='一致'?'ok':'warn'},
+      ]},
+    ];
+    state.behItems=[];groups.forEach(g=>g.items.forEach(it=>state.behItems.push(it)));
+    $('#trajBadge').hidden=false;
+    $('#behActions').hidden=false;
+    $('#behSummaryBox').innerHTML=`<div class="beh-summary${sus?' sus':''}">
+      <h4>行为特征分析结论</h4>
+      <p>采样期间操作以<b>${inputMode}</b>为主（触摸 ${touchPct}% / 精确指针 ${precisePct}%），移动模式为<b>${moveShort}</b>，${curveTxt}。综合判读：行为特征<b${sus?' style="color:var(--seal)"':''}>${humanTxt}</b>；与设备类型「${state.device.label}」的判定${consistTxt}。</p>
+    </div>`;
+    setSecState(3,'已完成','done');setStep(4,'done');setStep(5,'active');
+    unlockSection(4);
+    renderGroups($('#behList'),groups).then(()=>{
+      toast('行为采样与分析完成，请进行摄像头核验');
+      setTimeout(()=>$('#sec4').scrollIntoView({behavior:'smooth',block:'start'}),300);
+    });
+  }
+}
+
+/* ═══════════════ 肆 · 摄像头 ═══════════════ */
+function stopStream(){if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null;}}
+async function openCam(deviceId){
+  const video=deviceId?{deviceId:{exact:deviceId},width:{ideal:1280},height:{ideal:720}}:{width:{ideal:1280},height:{ideal:720}};
+  return navigator.mediaDevices.getUserMedia({audio:false,video});
+}
+function camErrText(e){
+  if(e&&e.name==='NotAllowedError')return{title:'摄像头权限被拒绝',detail:'你拒绝了浏览器的摄像头授权。请点击地址栏左侧的锁形 / 相机图标，将摄像头权限设为「允许」后重试。'};
+  if(e&&e.name==='NotFoundError')return{title:'未检测到摄像头设备',detail:'本机未发现可用的视频输入设备。请确认摄像头已正确连接并启用（笔记本请注意摄像头物理开关 / 隐私挡板）。'};
+  if(e&&e.name==='NotReadableError')return{title:'摄像头被占用',detail:'摄像头正在被其他应用程序使用。请关闭正在占用摄像头的程序（如视频会议软件）后重试。'};
+  return{title:'摄像头检测失败',detail:(e&&e.message)?'错误信息：'+e.message:'发生未知错误，请重试。'};
+}
+async function bindVideo(){
+  const v=$('#video');
+  v.srcObject=state.stream;v.play().catch(()=>{});
+  await new Promise(res=>v.readyState>=1?res():v.addEventListener('loadedmetadata',res,{once:true}));
+  const track=state.stream.getVideoTracks()[0];
+  const s=track.getSettings?track.getSettings():{};
+  const w=s.width||v.videoWidth,h=s.height||v.videoHeight;
+  state.camDetail.res=(w&&h)?w+' × '+h:'未知';
+  if(state.camStatus==='ok')renderCamInfo();
+}
+function renderCamInfo(){
+  const d=state.camDetail,dc=d.devCounts;
+  $('#camInfo').innerHTML=[
+    ['摄像头授权','已授权访问'],
+    ['摄像头设备',d.label],
+    ['画面规格',d.res],
+    ['音视频设备',`${dc.cams} 摄像头 · ${dc.mics} 麦克风 · ${dc.outs} 音频输出${dc.outs>1?'（疑似外接音频设备）':''}`],
+  ].map(([k,v])=>`<div class="crow in ok"><span class="c-name">${k}</span><span class="c-dots"></span><span class="c-val">${esc(v)}</span><span class="c-ic">${IC.ok}</span></div>`).join('');
+  if(state.cams.length>1){
+    $('#camSelectWrap').hidden=false;
+    $('#camSelect').innerHTML=state.cams.map((dv,i)=>`<option value="${esc(dv.deviceId)}">${esc(dv.label||'摄像头 '+(i+1))}</option>`).join('');
+  }
+}
+async function startCamFlow(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    state.camStatus='error';showPane('#sec4','error');
+    let title='当前环境不支持摄像头 API',detail='';
+    if(location.protocol==='file:'){title='移动端本地文件模式下暂无实时摄像头';detail='本页为本地文件分发模式：电脑端通常不受影响，但多数移动端浏览器在此模式下不开放实时摄像头权限（属浏览器限制，非设备问题，也不影响其他检测项）。请直接使用下方「调用系统相机」备用通道完成自拍，流程与效力相同。';}
+    else if(!window.isSecureContext){detail='当前页面不是安全上下文（非 HTTPS / 非 localhost），浏览器禁用了摄像头 API。请通过 HTTPS 访问本页面。';}
+    else{detail='当前浏览器不支持摄像头访问，请更换现代浏览器后重试。';}
+    $('#errTitle').textContent=title;$('#errDetail').textContent=detail;
+    setSecState(4,'异常','fail');return;
+  }
+  state.camStatus='requesting';showPane('#sec4','requesting');setSecState(4,'检测中','running');
+  try{
+    state.stream=await openCam();
+    const track=state.stream.getVideoTracks()[0];
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    state.cams=devs.filter(d=>d.kind==='videoinput');
+    state.camDetail={label:track.label||'默认摄像头',res:'',devCounts:{cams:state.cams.length,mics:devs.filter(d=>d.kind==='audioinput').length,outs:devs.filter(d=>d.kind==='audiooutput').length}};
+    state.camStatus='ok';showPane('#sec4','ok');
+    await bindVideo();renderCamInfo();
+    setSecState(4,'已完成','done');
+  }catch(e){
+    state.camStatus='error';stopStream();
+    const t=camErrText(e);
+    if(location.protocol==='file:')t.detail+=' 另：本页为本地文件分发模式，移动端浏览器在此模式下通常会直接拒绝实时摄像头权限 —— 请改用下方「调用系统相机」备用通道；电脑端可尝试换用 Chrome / Edge 打开。';
+    showPane('#sec4','error');
+    $('#errTitle').textContent=t.title;$('#errDetail').textContent=t.detail;
+    setSecState(4,'异常','fail');
+  }
+}
+
+/* ═══════════════ 伍 · 自拍留档 ═══════════════ */
+function shutterSound(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    const ac=new AC();
+    const mk=(freq,dur,vol,delay)=>{
+      const buf=ac.createBuffer(1,ac.sampleRate*dur,ac.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+      const src=ac.createBufferSource();src.buffer=buf;
+      const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=1.2;
+      const g=ac.createGain();g.gain.value=vol;
+      src.connect(f);f.connect(g);g.connect(ac.destination);
+      src.start(ac.currentTime+delay);
+    };
+    mk(2600,.05,.5,0);mk(900,.07,.4,.06);
+  }catch(e){}
+}
+function drawWatermark(ctx,w,h){
+  const barH=Math.max(Math.round(h*0.075),36);
+  ctx.fillStyle='rgba(18,15,12,.62)';ctx.fillRect(0,h-barH,w,barH);
+  ctx.fillStyle='rgba(246,243,234,.95)';ctx.textBaseline='middle';
+  const fs=Math.max(Math.round(barH*0.34),12);
+  ctx.font=`500 ${fs}px "IBM Plex Mono",monospace`;
+  ctx.textAlign='left';
+  ctx.fillText(`${state.student.cls} ${state.student.name} · ${state.reportId}`,w*0.02,h-barH/2);
+  ctx.textAlign='right';
+  ctx.fillText(`设备核验自拍留档 · ${fmtTime()}`,w*0.98,h-barH/2);
+}
+function capturePhoto(){
+  const v=$('#video');if(!v.videoWidth)return null;
+  const w=v.videoWidth,h=v.videoHeight;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');
+  ctx.translate(w,0);ctx.scale(-1,1);ctx.drawImage(v,0,0,w,h);
+  ctx.setTransform(1,0,0,1,0,0);
+  drawWatermark(ctx,w,h);
+  return{dataUrl:c.toDataURL('image/jpeg',0.9),w,h,takenAt:new Date(),method:'live'};
+}
+async function processFilePhoto(file){
+  let src;
+  try{src=await createImageBitmap(file,{imageOrientation:'from-image'});}
+  catch(e){
+    src=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('无法解码图片'));i.src=URL.createObjectURL(file);});
+  }
+  const scale=Math.min(1,1280/src.width);
+  const w=Math.max(1,Math.round(src.width*scale)),h=Math.max(1,Math.round(src.height*scale));
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');ctx.drawImage(src,0,0,w,h);
+  drawWatermark(ctx,w,h);
+  return{dataUrl:c.toDataURL('image/jpeg',0.9),w,h,takenAt:new Date(),method:'system'};
+}
+function showPhotoCaptured(){
+  const p=state.photo;
+  $('#photoImg').src=p.dataUrl;
+  $('#photoCapR').textContent=p.w+' × '+p.h;
+  $('#photoMeta').textContent=`自拍照已生成 · ${p.method==='live'?'实时摄像头流':'系统相机备用通道'} · ${p.w} × ${p.h} · ${fmtTime(p.takenAt)}`;
+  showPane('#sec5','captured');
+}
+async function shootFlow(){
+  const btn=$('#btnShoot');btn.disabled=true;
+  const stage=$('#stage');stage.classList.add('focus');
+  for(const n of[3,2,1]){$('#countLayer').innerHTML=`<b>${n}</b>`;await sleep(740);}
+  $('#countLayer').innerHTML='';
+  const fl=$('#flash');fl.classList.remove('on');void fl.offsetWidth;fl.classList.add('on');
+  shutterSound();await sleep(130);
+  const photo=capturePhoto();
+  stage.classList.remove('focus');btn.disabled=false;
+  if(!photo){toast('摄像头画面尚未就绪，请稍候重试','warn');return;}
+  state.photo=photo;
+  showPhotoCaptured();
+  setSecState(5,'待确认','running');
+}
+function retake(){
+  if(state.photo&&state.photo.method==='system'){$('#fileCam').click();return;}
+  showPane('#sec5','stage');setSecState(5,'进行中','running');
+}
+function confirmPhoto(){
+  stopStream();
+  $('#photoActions').innerHTML='<span class="lock-tag" style="margin-top:0;border-color:var(--ok);color:var(--ok)">自拍照已确认留存</span>';
+  setSecState(5,'已完成','done');setStep(6,'done');
+  const v=computeVerdict();
+  $('#sealHolder').innerHTML=sealSVG(v.level);
+  setTimeout(()=>$('#stampWrap').classList.add('stamped'),150);
+  toast('自拍照已留存，核验结论已生成');
+  setTimeout(()=>{
+    unlockSection(6);setStep(7,'active');
+    renderVerdict();
+    $('#sec6').scrollIntoView({behavior:'smooth',block:'start'});
+  },950);
+}
+function skipCam(){
+  state.camStatus='skipped';stopStream();
+  setSecState(4,'异常','fail');setSecState(5,'未留存','fail');
+  setStep(5,'done');setStep(6,'done');
+  showPane('#sec5','skipped');
+  unlockSection(5);unlockSection(6);setStep(7,'active');
+  renderVerdict();
+  toast('已标记摄像头异常，将生成未通过报告供人工复核','warn');
+  setTimeout(()=>$('#sec6').scrollIntoView({behavior:'smooth',block:'start'}),400);
+}
+
+/* ═══════════════ 陆 · 结论与报告 ═══════════════ */
+function computeVerdict(){
+  const dev=state.device,fails=[],risks=[],oks=[];
+  if(dev.cat==='phone')fails.push('设备为智能手机 —— 在线考试不允许使用手机参加');
+  if(dev.cat==='watch')fails.push('设备为智能手表 / 穿戴设备 —— 不允许用于在线考试');
+  if(!state.photo)fails.push('未留存考生自拍照（摄像头核验未完成）');
+  if(dev.cat==='desktop')oks.push('设备为台式电脑 / 笔记本，符合考试设备要求');
+  if(dev.cat==='tablet')risks.push('设备为平板电脑 —— 核验通过，但存在分屏 / 多任务等风险（有风险）');
+  if(state.photo){
+    oks.push(state.photo.method==='live'?'自拍照经实时摄像头流采集并留存':'自拍照经系统相机备用通道采集并留存');
+    if(state.photo.method==='system')risks.push('自拍非实时视频流验证，真实性弱于实时采集');
+  }
+  if(dev.conflict)risks.push('UA 声明与实测设备特征不一致（外接指针设备，或 UA 已被修改）');
+  if(state.behavior&&state.behavior.sus)risks.push('行为采样呈现高度规律性（'+state.behavior.susNotes.join('、')+'），疑似自动化输入，建议人工复核');
+  const wn=state.envResults.filter(r=>r.status==='warn'||r.status==='bad').length+state.fpResults.filter(r=>r.status==='warn').length;
+  if(wn)risks.push(`环境与指纹检测中有 ${wn} 项提醒`);
+  oks.push(`环境检测 ${state.envResults.length} 项 · 指纹特征 ${state.fpResults.length} 项 · 行为判读：${state.behavior?(state.behavior.sus?'存在自动化嫌疑':'自然人类特征'):'未完成'}`);
+  const level=fails.length?'fail':risks.length?'risk':'pass';
+  return{level,fails,risks,oks};
+}
+function renderVerdict(){
+  const v=computeVerdict();state.verdict=v;
+  setSecState(6,v.level==='pass'?'核验通过':v.level==='risk'?'通过 · 有风险':'核验未通过',v.level==='pass'?'done':v.level==='risk'?'running':'fail');
+  $('#sec6Lock').hidden=true;showPane('#sec6','ready');
+  const card=$('#verdictCard');
+  card.className='verdict-card'+(v.level==='risk'?' risk':v.level==='fail'?' fail':'');
+  card.innerHTML=`
+    <h3>${v.level==='pass'?'核 验 通 过':v.level==='risk'?'核验通过 · 有风险':'核 验 未 通 过'}</h3>
+    <ul>${v.fails.map(t=>`<li class="bad">${esc(t)}</li>`).join('')}${v.risks.map(t=>`<li class="wrn">${esc(t)}</li>`).join('')}${v.oks.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+    <p class="vt">VERDICT AT ${fmtTime()} · ${state.reportId} · 考生 ${esc(state.student.name)}（${state.student.cls}）</p>`;
+}
+function sealSVG(level){
+  const map={pass:['通过',34],risk:['有风险',29],fail:['未通过',29]};
+  const[word,fs]=map[level]||map.pass;
+  const d=new Date();
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <path id="sealArc" d="M100,100 m-70,0 a70,70 0 1,1 140,0 a70,70 0 1,1 -140,0"/>
+      <filter id="sealRough"><feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter>
+    </defs>
+    <g filter="url(#sealRough)">
+      <circle cx="100" cy="100" r="94" fill="none" stroke="#b13a2a" stroke-width="5.5"/>
+      <circle cx="100" cy="100" r="85" fill="none" stroke="#b13a2a" stroke-width="1.5"/>
+      <text font-family="Noto Serif SC,serif" font-size="15" letter-spacing="5" fill="#b13a2a"><textPath href="#sealArc" xlink:href="#sealArc" startOffset="25%" text-anchor="middle">设备环境核验专用章</textPath></text>
+      <text x="100" y="92" text-anchor="middle" font-family="Noto Serif SC,serif" font-weight="900" font-size="34" fill="#b13a2a" letter-spacing="4">核验</text>
+      <rect x="97" y="100" width="6" height="6" fill="#b13a2a" transform="rotate(45 100 103)"/>
+      <text x="100" y="136" text-anchor="middle" font-family="Noto Serif SC,serif" font-weight="900" font-size="${fs}" fill="#b13a2a" letter-spacing="3">${word}</text>
+      <text x="100" y="160" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" letter-spacing="2" fill="#b13a2a">${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}</text>
+    </g>
+  </svg>`;
+}
+function camRowsForReport(){
+  if(state.photo){
+    const rows=[['采集方式',state.photo.method==='live'?'实时摄像头流':'系统相机备用通道']];
+    if(state.photo.method==='live'&&state.camDetail){
+      rows.push(['摄像头设备',state.camDetail.label],['画面规格',state.camDetail.res]);
+      const dc=state.camDetail.devCounts;
+      rows.push(['音视频设备',`${dc.cams} 摄像头 · ${dc.mics} 麦克风 · ${dc.outs} 音频输出`]);
+    }
+    rows.push(['自拍照','已留存（见下方影像）']);
+    return rows;
+  }
+  return[['摄像头','核验未完成 / 异常'],['自拍照','未留存']];
+}
+function buildReport(){
+  const v=state.verdict||computeVerdict();
+  const st=state.student;
+  const envRows=state.envResults.map(r=>`<tr><td>${esc(r.label)}</td><td>${esc(r.value)}${r.status==='warn'?' <em>［提醒］</em>':r.status==='bad'?' <em class="bad">［异常］</em>':''}</td></tr>`).join('');
+  const fpRows=state.fpResults.map(r=>`<tr><td>${esc(r.label)}</td><td>${esc(r.value)}</td></tr>`).join('');
+  const behRows=state.behItems.map(r=>`<tr><td>${esc(r.label)}</td><td>${esc(r.value)}${r.status==='warn'?' <em>［提醒］</em>':''}</td></tr>`).join('');
+  const camRows=camRowsForReport().map(([k,val])=>`<tr><td>${esc(k)}</td><td>${esc(val)}</td></tr>`).join('');
+  const vTitle=v.level==='pass'?'核 验 通 过':v.level==='risk'?'核验通过 · 有风险':'核 验 未 通 过';
+  const vColor=v.level==='pass'?'#2f6b4f':v.level==='risk'?'#a05a1f':'#b13a2a';
+  const reasons=[...v.fails.map(t=>`<li class="bad">${esc(t)}</li>`),...v.risks.map(t=>`<li class="wrn">${esc(t)}</li>`),...v.oks.map(t=>`<li>${esc(t)}</li>`)].join('');
+  const photoBlock=state.photo
+    ?`<figure class="r-photo"><img src="${state.photo.dataUrl}" alt="考生自拍留档"><figcaption>考生自拍留档 · ${state.photo.method==='live'?'实时摄像头流':'系统相机备用通道'} · ${state.photo.w} × ${state.photo.h} · ${fmtTime(state.photo.takenAt)}</figcaption></figure>`
+    :'<div class="r-nophoto">未留存自拍照（摄像头核验异常 / 未完成）</div>';
+  const trajBlock=state.trajImg
+    ?`<figure class="r-photo"><img src="${state.trajImg}" alt="指针轨迹采样图"><figcaption>行为特征采样轨迹图（完整路径与点击位置）</figcaption></figure>`
+    :'';
+  const behNote=state.behSummaryPlain?`<div class="r-note${state.behSus?' sus':''}"><b>行为特征分析结论：</b>${esc(state.behSummaryPlain)}</div>`:'';
+  return `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设备核验报告 ${state.reportId} · ${esc(st.name)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body{background:#f6f3ea;color:#1c1915;font-family:'Noto Sans SC',sans-serif;margin:0;padding:30px 18px}
+  .r-sheet{max-width:760px;margin:0 auto}
+  .r-eyebrow{font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.3em;color:#4f4a3f}
+  h1{font:900 clamp(24px,4.5vw,34px)/1.3 'Noto Serif SC',serif;letter-spacing:.08em;margin:12px 0 4px}
+  .r-rule{border-top:1px solid #1c1915;margin:16px 0 3px;position:relative}
+  .r-rule::after{content:'';position:absolute;left:0;right:0;top:3px;border-top:1px solid #1c1915}
+  .r-meta{font:400 11px/2 'IBM Plex Mono',monospace;color:#4f4a3f;display:flex;gap:24px;flex-wrap:wrap;padding:12px 0}
+  .r-verdict{border:1px solid #1c1915;border-left:6px solid ${vColor};padding:22px 26px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .r-verdict h2{font:900 24px/1.3 'Noto Serif SC',serif;letter-spacing:.18em;color:${vColor};margin:0 0 10px}
+  .r-verdict ul{list-style:none;margin:0;padding:0}
+  .r-verdict li{font-size:12.5px;color:#4f4a3f;line-height:1.9;padding-left:14px;position:relative}
+  .r-verdict li::before{content:'';position:absolute;left:0;top:.72em;width:5px;height:5px;transform:rotate(45deg);background:#2f6b4f}
+  .r-verdict li.wrn::before{background:#a05a1f}
+  .r-verdict li.bad{color:#b13a2a}.r-verdict li.bad::before{background:#b13a2a}
+  .r-verdict svg{width:118px;height:118px;flex-shrink:0;transform:rotate(-6deg);opacity:.92;mix-blend-mode:multiply}
+  h3{font:700 14px 'Noto Sans SC',sans-serif;letter-spacing:.18em;margin:34px 0 10px;display:flex;align-items:center;gap:9px}
+  h3::before{content:'';width:5px;height:5px;background:#b13a2a;transform:rotate(45deg)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td{border:1px solid #d9d2bf;padding:9px 14px}
+  td:first-child{color:#4f4a3f;white-space:nowrap;width:1%}
+  td em{color:#a05a1f;font-style:normal}
+  td em.bad{color:#b13a2a}
+  .r-note{margin:16px 0 0;border:1px solid #d9d2bf;border-left:4px solid #2f6b4f;background:#efeadd;padding:14px 18px;font-size:12.5px;color:#4f4a3f;line-height:1.9}
+  .r-note.sus{border-left-color:#b13a2a}
+  .r-photo{margin:0;max-width:440px}
+  .r-photo img{display:block;width:100%;border:1px solid #c2ba9f}
+  .r-photo figcaption{font:400 10.5px 'IBM Plex Mono',monospace;color:#8b8474;letter-spacing:.08em;margin-top:9px}
+  .r-nophoto{border:1px dashed #b13a2a;color:#b13a2a;padding:24px;font-size:13px}
+  .r-foot{margin-top:36px;border-top:1px solid #d9d2bf;padding-top:14px;font:400 10.5px/2 'IBM Plex Mono',monospace;color:#8b8474;word-break:break-all}
+  @media print{body{background:#fff;padding:0}}
+</style></head><body>
+<div class="r-sheet">
+  <p class="r-eyebrow">ONLINE EXAM · DEVICE VERIFICATION REPORT</p>
+  <h1>考生设备环境核验报告</h1>
+  <div class="r-rule"></div>
+  <div class="r-meta">
+    <span>编号 ${state.reportId}</span>
+    <span>考生 ${esc(st.name)}</span>
+    <span>班级 ${st.cls}（${st.grade} 届 ${st.clsNo} 班）</span>
+    <span>生成时间 ${fmtTime()}</span>
+    <span>结论：${v.level==='pass'?'通过':v.level==='risk'?'通过（有风险）':'未通过'}</span>
+  </div>
+  <div class="r-verdict">
+    <div>
+      <h2>${vTitle}</h2>
+      <ul>${reasons}</ul>
+    </div>
+    ${sealSVG(v.level)}
+  </div>
+  <h3>表一 · 设备与环境检测</h3>
+  <table>${envRows}</table>
+  <h3>表二 · 设备指纹与环境特征</h3>
+  <table>${fpRows}</table>
+  <h3>表三 · 行为特征采样与分析</h3>
+  <table>${behRows}</table>
+  ${behNote}
+  ${trajBlock}
+  <h3>表四 · 摄像头与影像</h3>
+  <table>${camRows}</table>
+  <h3>考生自拍留档</h3>
+  ${photoBlock}
+  <div class="r-foot">
+    综合设备指纹&nbsp;${state.fingerprint}<br>
+    USER-AGENT&nbsp;${esc(navigator.userAgent)}<br>
+    本报告由考生设备端浏览器自动采集生成，数据与影像均在本地完成采集 · 仅供考务核验参考 · ${state.reportId}
+  </div>
+</div>
+</body></html>`;
+}
+
+/* ═══════════════ 表单校验与启动 ═══════════════ */
+function validateName(v){
+  v=v.trim();
+  if(!v)return{ok:false,msg:'请输入姓名'};
+  if(!/^[\u4e00-\u9fa5A-Za-z·.\s]{2,20}$/.test(v))return{ok:false,msg:'请输入 2–20 位中英文姓名'};
+  return{ok:true,msg:'✓ 格式正确',v};
+}
+function validateCls(v){
+  v=v.trim();
+  if(!/^\d{5}$/.test(v))return{ok:false,msg:'应为 5 位数字，如 10501'};
+  const g=+v.slice(0,3),c=+v.slice(3);
+  if(g<100)return{ok:false,msg:'届数应为 100–999'};
+  if(c<1||c>99)return{ok:false,msg:'班级应为 01–99'};
+  return{ok:true,msg:`✓ ${g} 届 · ${pad(c)} 班`,g,c,v};
+}
+function setMsg(id,res,raw){
+  const el=document.getElementById(id);
+  if(!raw.trim()){el.className='field-msg';el.textContent=el.dataset.hint;return;}
+  el.className='field-msg '+(res.ok?'ok':'err');
+  el.textContent=res.msg;
+}
+async function runChecks(){
+  unlockSection(1);setStep(2,'active');
+  state.uaData=await getUAData();
+  await runEnvCheck();
+  unlockSection(2);
+  await runFingerprintCheck();
+}
+function init(){
+  const d=new Date();
+  state.reportId=`EXAM-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${String(Math.floor(1000+Math.random()*9000))}`;
+  $('#docId').textContent=state.reportId;
+  const tick=()=>{$('#clock').textContent=fmtTime();};
+  tick();setInterval(tick,1000);
+  bindPassive();
+  if(location.protocol==='file:')$('#fileNotice').hidden=false;
+
+  /* 〇 表单 */
+  $('#nameMsg').dataset.hint=$('#nameMsg').textContent;
+  $('#clsMsg').dataset.hint=$('#clsMsg').textContent;
+  const nm=$('#inputName'),cl=$('#inputCls');
+  const upd=()=>{
+    const a=validateName(nm.value),b=validateCls(cl.value);
+    setMsg('nameMsg',a,nm.value);setMsg('clsMsg',b,cl.value);
+    $('#btnReg').disabled=!(a.ok&&b.ok);
+  };
+  nm.addEventListener('input',upd);cl.addEventListener('input',upd);
+  $('#regForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const a=validateName(nm.value),b=validateCls(cl.value);
+    if(!(a.ok&&b.ok))return;
+    state.student={name:a.v,cls:b.v,grade:b.g,clsNo:pad(b.c)};
+    nm.disabled=true;cl.disabled=true;$('#btnReg').disabled=true;
+    $('#regForm').hidden=true;
+    $('#regDone').hidden=false;
+    $('#regDoneText').innerHTML=`考生 <b>${esc(state.student.name)}</b> · ${state.student.grade} 届 ${state.student.clsNo} 班（${state.student.cls}）· 登记于 ${fmtTime()}`;
+    $('#docStudent').textContent=`${state.student.name} · ${state.student.cls}`;
+    setSecState(0,'已登记','done');setStep(1,'done');
+    toast('信息登记完成，开始设备环境检测');
+    runChecks();
+  });
+
+  /* 叁 采样 */
+  $('#btnSample').addEventListener('click',startSampling);
+  $('#btnResample').addEventListener('click',startSampling);
+
+  /* 肆 摄像头 */
+  $('#btnStartCam').addEventListener('click',startCamFlow);
+  $('#btnRetryCam').addEventListener('click',startCamFlow);
+  $('#btnSkipCam').addEventListener('click',skipCam);
+  $('#btnSysCam').addEventListener('click',()=>$('#fileCam').click());
+  $('#fileCam').addEventListener('change',async e=>{
+    const f=e.target.files&&e.target.files[0];
+    e.target.value='';
+    if(!f)return;
+    toast('正在处理系统相机照片…');
+    try{
+      const photo=await processFilePhoto(f);
+      state.photo=photo;
+      stopStream();
+      setSecState(4,'备用通道','done');setStep(5,'done');
+      unlockSection(5);setStep(6,'active');
+      setSecState(5,'待确认','running');
+      showPhotoCaptured();
+      $('#sec5').scrollIntoView({behavior:'smooth',block:'start'});
+      toast('已通过系统相机备用通道完成拍照');
+    }catch(err){toast('照片处理失败：'+(err.message||'未知错误'),'warn');}
+  });
+  $('#btnToShoot').addEventListener('click',()=>{
+    unlockSection(5);setStep(6,'active');
+    setSecState(5,'进行中','running');
+    showPane('#sec5','stage');
+    $('#sec5').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  $('#camSelect').addEventListener('change',async e=>{
+    try{
+      stopStream();
+      state.stream=await openCam(e.target.value);
+      await bindVideo();
+      toast('已切换至：'+(state.stream.getVideoTracks()[0].label||'新设备'));
+    }catch(err){toast('切换摄像头失败：'+(err.message||'未知错误'),'warn');}
+  });
+
+  /* 伍 自拍 */
+  $('#btnShoot').addEventListener('click',shootFlow);
+  $('#btnRetake').addEventListener('click',retake);
+  $('#btnConfirm').addEventListener('click',confirmPhoto);
+
+  /* 陆 报告 */
+  $('#btnDownload').addEventListener('click',()=>{
+    try{
+      const blob=new Blob([buildReport()],{type:'text/html;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`设备核验报告_${state.student.cls}_${state.student.name}_${state.reportId}.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
+      setStep(7,'done');setSecState(6,'已归档','done');
+      toast('检测报告已生成，开始下载');
+    }catch(e){toast('报告生成失败：'+(e.message||'未知错误'),'warn');}
+  });
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
