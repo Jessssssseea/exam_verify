@@ -43,13 +43,15 @@ After entering candidate name and class ID, the page automatically runs a full v
     - Three‑tier result: `Passed` / `Passed with Risks` / `Failed` with stylized red seal graphic
 7. **Export Standalone Offline Report**
     - Export self‑contained HTML report including all detection logs, fingerprints, trajectory graph, self‑portrait photo and verification seal
-    - Report requires no internet connection; viewable and printable in any modern browser
+    - Preview the report in a new window before archiving; report requires no internet connection; viewable and printable in any modern browser
+    - A leave‑confirmation dialog appears if the tab is closed before the report has been downloaded, preventing accidental data loss (all data lives in volatile memory)
 
 ## File Structure
 ```
 Online‑Exam‑Verification/
-├── index.html      # Complete source code (HTML + CSS + JavaScript single‑file, zero business‑logic external dependencies)
-└── README.md       # This documentation
+├── index.html                 # Complete source code (HTML + CSS + JavaScript single‑file, zero business‑logic external dependencies)
+├── assets/images/logo.png     # Favicon
+└── README.md                  # This documentation
 ```
 > All styles and scripts are inline. Only external resources are Google Fonts for UI typography.
 > In fully offline intranet environments, features keep working normally; only font rendering degrades to system default fonts.

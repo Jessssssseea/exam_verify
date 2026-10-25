@@ -43,10 +43,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;
 .step.done .num{border-color:var(--ok);background:var(--ok)}
 .step.done .num i{color:transparent;position:relative}
 .step.done .num i::after{content:'';position:absolute;inset:0;margin:auto;width:8px;height:4px;border-left:1.6px solid var(--paper);border-bottom:1.6px solid var(--paper);transform:translateY(-1px) rotate(-45deg)}
+.step.warn .num{border-color:var(--warn);background:var(--warn)}
+.step.warn .num i{color:transparent;position:relative}
+.step.warn .num i::after{content:'?';position:absolute;inset:0;display:grid;place-items:center;color:var(--paper);font:700 14px/1 var(--sans)}
+.step.fail .num{border-color:var(--seal);background:var(--seal)}
+.step.fail .num i{color:transparent;position:relative}
+.step.fail .num i::before,.step.fail .num i::after{content:'';position:absolute;left:50%;top:50%;width:11px;height:1.8px;background:var(--paper);border-radius:1px}
+.step.fail .num i::before{transform:translate(-50%,-50%) rotate(45deg)}
+.step.fail .num i::after{transform:translate(-50%,-50%) rotate(-45deg)}
 .step:not(:last-child)::after{content:'';width:clamp(8px,2.4vw,26px);height:1px;background:var(--line-2);flex-shrink:0}
+.steps-prog{margin-left:auto;align-self:center;font:500 10px var(--mono);letter-spacing:.2em;color:var(--ink-3);white-space:nowrap;transition:color .3s;font-variant-numeric:tabular-nums}
+.steps-prog.all{color:var(--ok)}
 
 /* ═══ 段落 ═══ */
 .section{margin-top:52px;transition:opacity .6s;scroll-margin-top:20px}
+.section:focus{outline:none}
 .section.locked{opacity:.32}
 .section.flash{animation:secflash 1.4s ease}
 @keyframes secflash{0%{background:rgba(177,58,42,.06)}100%{background:transparent}}
@@ -107,6 +118,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;
 .btn-primary{background:var(--ink);color:var(--paper)}
 .btn-primary:hover:not(:disabled){background:#000}
 .btn-big{padding:15px 32px;font-size:14.5px}
+.btn-sm{padding:8px 14px;font-size:12px}
+.btn.archived{border-color:var(--ok);color:var(--ok)}
 .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
 
 /* ═══ 轨迹采样 ═══ */
@@ -125,7 +138,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;
 .traj-badge{position:absolute;top:14px;right:14px;background:rgba(22,19,15,.65)}
 
 /* ═══ 行为分析结论 ═══ */
-.beh-summary{margin-top:20px;border:1px solid var(--line-2);border-left:4px solid var(--ok);background:var(--paper-2);padding:16px 20px}
+.beh-summary{margin-top:20px;border:1px solid var(--line-2);border-left:4px solid var(--ok);background:var(--paper-2);padding:16px 20px;animation:rise .5s ease both}
 .beh-summary.sus{border-left-color:var(--seal)}
 .beh-summary h4{font:700 13px var(--sans);letter-spacing:.12em;margin-bottom:8px}
 .beh-summary p{font-size:13px;color:var(--ink-2);line-height:2}
@@ -144,6 +157,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;
 .privacy svg{width:13px;height:13px;flex-shrink:0}
 .pane[hidden]{display:none!important}
 .cam-wait{margin-top:26px;display:flex;align-items:center;gap:14px;color:var(--ink-2);font-size:13.5px}
+.cam-wait-note{margin-top:14px;display:flex;align-items:flex-start;gap:8px;font:400 11.5px/1.9 var(--mono);color:var(--ink-3);letter-spacing:.03em;max-width:560px}
+.cam-wait-note svg{width:14px;height:14px;flex-shrink:0;margin-top:4px}
+.cam-wait-note b{color:var(--ink-2)}
 .cam-wait .c-ic{width:22px}
 .cam-wait .c-ic svg{width:20px;height:20px}
 .cam-info{margin-top:22px}
@@ -161,6 +177,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;
 .stage{position:relative;width:100%;max-width:560px;aspect-ratio:4/3;background:#16130f;overflow:hidden}
 .stage video,.stage .photo-live{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .stage video{transform:scaleX(-1)}
+.stage.cancelable{cursor:pointer}
+.privacy-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(18,15,12,.74);border:1px solid rgba(246,243,234,.28);padding:10px 20px;z-index:4;pointer-events:none;max-width:calc(100% - 24px)}
+.privacy-banner b{font:900 18px/1.2 var(--serif);letter-spacing:.16em;color:#f6f3ea;white-space:nowrap}
+.privacy-banner svg{width:18px;height:18px;color:#f6f3ea;flex-shrink:0}
+.stage.captured .privacy-banner{display:none}
 .stage.captured video,.stage.captured .guide,.stage.captured .corners{display:none}
 .stage .photo-live{display:none}
 .stage.captured .photo-live{display:block}
@@ -198,7 +219,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;
 .skip-note{margin-top:24px;border:1px dashed var(--seal);padding:20px 24px;font-size:13px;color:var(--ink-2);line-height:1.9;background:rgba(177,58,42,.03)}
 
 /* ═══ 结论 ═══ */
-.verdict-card{margin-top:26px;border:1px solid var(--ink);border-left:6px solid var(--ok);padding:28px 30px}
+.verdict-card{margin-top:26px;border:1px solid var(--ink);border-left:6px solid var(--ok);padding:28px 30px;animation:rise .55s .1s ease both}
 .verdict-card.risk{border-left-color:var(--warn)}
 .verdict-card.fail{border-left-color:var(--seal)}
 .verdict-card h3{font:900 clamp(21px,3.6vw,30px)/1.35 var(--serif);letter-spacing:.14em;margin-bottom:14px}
@@ -238,6 +259,9 @@ footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18p
   .step .lb{display:none}
   .count-layer b{font-size:88px}
 }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
@@ -271,6 +295,7 @@ footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18p
     <li class="step" data-step="5"><span class="num"><i>05</i></span><span class="lb">摄像头</span></li>
     <li class="step" data-step="6"><span class="num"><i>06</i></span><span class="lb">自拍留档</span></li>
     <li class="step" data-step="7"><span class="num"><i>07</i></span><span class="lb">结论报告</span></li>
+    <li class="steps-prog" id="stepsProg" aria-hidden="true">0 / 7</li>
   </ol>
 
   <!-- ═══ 〇 · 报考信息登记 ═══ -->
@@ -299,7 +324,7 @@ footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18p
             登记并开始设备核验
           </button>
         </div>
-        <p class="form-note">班级编号格式说明：<b>10701</b> = <b>107</b> 届 <b>01</b> 班（前 3 位为届数 106–107，后 2 位为班级 01–24）。登记后信息将写入检测报告与照片水印，不可修改。</p>
+        <p class="form-note">班级编号格式说明：<b>10701</b> = <b>107</b> 届 <b>01</b> 班（前 3 位为届数 100–999，后 2 位为班级 01–99）。登记后信息将写入检测报告与照片水印，不可修改。</p>
       </form>
       <div class="reg-done" id="regDone" hidden>
         <span class="chip-ok">✓ 已登记</span>
@@ -396,14 +421,22 @@ footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18p
       <div class="pane" data-pane="requesting" hidden>
         <div class="cam-wait">
           <span class="c-ic"><svg class="spin" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="9 28" stroke-linecap="round"/></svg></span>
-          正在请求摄像头权限，请在浏览器弹窗中允许访问…
+          <span>正在请求摄像头权限，请在浏览器弹窗中允许访问…</span>
         </div>
+        <p class="cam-wait-note">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>
+          允许后画面仅在本机实时显示，<b>不会被录制、保存或上传</b>；拒绝可随时在地址栏图标中重新开启。
+        </p>
       </div>
       <div class="pane" data-pane="ok" hidden>
         <div class="cam-info" id="camInfo"></div>
         <div class="cam-select" id="camSelectWrap" hidden>
           <label for="camSelect">视频输入设备</label>
-          <select id="camSelect"></select>
+          <select id="camSelect" aria-label="选择视频输入设备"></select>
+          <button class="btn btn-sm" id="btnRefreshCams" type="button">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 11-1.6-3.9M13.5 1.5v3h-3"/></svg>
+            刷新设备列表
+          </button>
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" id="btnToShoot">
@@ -446,12 +479,16 @@ footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18p
         <div class="stage-wrap">
           <div class="stage" id="stage">
             <video id="video" autoplay playsinline muted></video>
+            <div class="privacy-banner">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>
+              <b>仅存本机 · 绝不上传</b>
+            </div>
             <div class="corners"><i></i><i></i><i></i><i></i></div>
             <div class="guide"></div>
             <div class="count-layer" id="countLayer"></div>
           </div>
           <div class="stage-bar">
-            <p class="hint">请正对镜头，将面部完整置于虚线提示圈内，点击拍摄后有 3 秒倒计时</p>
+            <p class="hint">请正对镜头，将面部完整置于虚线提示圈内；点击拍摄后有 3 秒倒计时，倒计时期间点击画面可取消</p>
             <div class="actions">
               <button class="btn btn-primary btn-big" id="btnShoot">
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="2.5" fill="currentColor" stroke="none"/></svg>
@@ -509,6 +546,10 @@ footer.colophon{margin-top:70px;border-top:1px solid var(--line);padding-top:18p
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M2.5 13.5h11"/></svg>
             下载检测报告（HTML）
           </button>
+          <button class="btn btn-big" id="btnPreview">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8s-2.4 4.5-6.5 4.5S1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>
+            预览报告（新窗口）
+          </button>
         </div>
         <p class="report-note">报告为独立 HTML 文件，包含报考信息、全部检测明细、设备指纹、行为轨迹图与分析结论、自拍留档照片，可在任意浏览器中打开、存档或打印，无需联网。</p>
       </div>
@@ -545,7 +586,7 @@ const state={
   envResults:[],fpResults:[],
   fingerprint:'',
   stream:null,cams:[],camDetail:null,camStatus:'idle',
-  photo:null,trajImg:null,behavior:null,behItems:[],behSummaryPlain:'',behSus:false,verdict:null
+  photo:null,trajImg:null,behavior:null,behItems:[],behSummaryPlain:'',behSus:false,verdict:null,reportSaved:false
 };
 
 function toast(msg,type=''){
@@ -555,11 +596,19 @@ function toast(msg,type=''){
   setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320);},3000);
 }
 function showPane(sec,name){document.querySelectorAll(sec+' .pane').forEach(p=>p.hidden=p.dataset.pane!==name);}
-function setStep(n,s){const el=document.querySelector(`.step[data-step="${n}"]`);el.classList.remove('active','done');if(s)el.classList.add(s);}
+function setStep(n,s,tip){
+  const el=document.querySelector(`.step[data-step="${n}"]`);if(!el)return;
+  el.classList.remove('active','done','warn','fail');if(s)el.classList.add(s);el.title=(tip||'');
+  const steps=[...document.querySelectorAll('.step')];
+  const resolved=steps.filter(x=>x.classList.contains('done')||x.classList.contains('warn')||x.classList.contains('fail')).length;
+  const prog=$('#stepsProg');
+  if(prog){prog.textContent=resolved+' / '+steps.length;prog.classList.toggle('all',resolved===steps.length);}
+}
 function setSecState(n,txt,cls=''){const el=$('#sec'+n+'State');el.textContent=txt;el.className='sec-state '+cls;}
 function unlockSection(n){
   const el=$('#sec'+n);if(!el.classList.contains('locked'))return;
   el.classList.remove('locked');el.classList.add('flash');
+  el.tabIndex=-1;el.focus({preventScroll:true});
   setTimeout(()=>el.classList.remove('flash'),1500);
 }
 
@@ -1120,6 +1169,15 @@ async function bindVideo(){
   state.camDetail.res=(w&&h)?w+' × '+h:'未知';
   if(state.camStatus==='ok')renderCamInfo();
 }
+function renderCamSelect(){
+  const sel=$('#camSelect');
+  if(!state.cams||!state.cams.length){$('#camSelectWrap').hidden=true;return;}
+  $('#camSelectWrap').hidden=false;
+  const track=state.stream&&state.stream.getVideoTracks()[0];
+  const activeId=track&&track.getSettings?track.getSettings().deviceId:null;
+  sel.innerHTML=state.cams.map((dv,i)=>`<option value="${esc(dv.deviceId||'')}">${esc(dv.label||'摄像头 '+(i+1))}</option>`).join('');
+  if(activeId&&[...sel.options].some(o=>o.value===activeId))sel.value=activeId;
+}
 function renderCamInfo(){
   const d=state.camDetail,dc=d.devCounts;
   $('#camInfo').innerHTML=[
@@ -1128,10 +1186,7 @@ function renderCamInfo(){
     ['画面规格',d.res],
     ['音视频设备',`${dc.cams} 摄像头 · ${dc.mics} 麦克风 · ${dc.outs} 音频输出${dc.outs>1?'（疑似外接音频设备）':''}`],
   ].map(([k,v])=>`<div class="crow in ok"><span class="c-name">${k}</span><span class="c-dots"></span><span class="c-val">${esc(v)}</span><span class="c-ic">${IC.ok}</span></div>`).join('');
-  if(state.cams.length>1){
-    $('#camSelectWrap').hidden=false;
-    $('#camSelect').innerHTML=state.cams.map((dv,i)=>`<option value="${esc(dv.deviceId)}">${esc(dv.label||'摄像头 '+(i+1))}</option>`).join('');
-  }
+  renderCamSelect();
 }
 async function startCamFlow(){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
@@ -1144,16 +1199,19 @@ async function startCamFlow(){
     setSecState(4,'异常','fail');return;
   }
   state.camStatus='requesting';showPane('#sec4','requesting');setSecState(4,'检测中','running');
+  const hintTimer=setTimeout(()=>toast('若未见授权弹窗，请点击地址栏左侧的摄像头 / 锁形图标手动允许','warn'),12000);
   try{
     state.stream=await openCam();
+    clearTimeout(hintTimer);
     const track=state.stream.getVideoTracks()[0];
     const devs=await navigator.mediaDevices.enumerateDevices();
     state.cams=devs.filter(d=>d.kind==='videoinput');
     state.camDetail={label:track.label||'默认摄像头',res:'',devCounts:{cams:state.cams.length,mics:devs.filter(d=>d.kind==='audioinput').length,outs:devs.filter(d=>d.kind==='audiooutput').length}};
     state.camStatus='ok';showPane('#sec4','ok');
     await bindVideo();renderCamInfo();
-    setSecState(4,'已完成','done');
+    setSecState(4,'已完成','done');setStep(5,'done');
   }catch(e){
+    clearTimeout(hintTimer);
     state.camStatus='error';stopStream();
     const t=camErrText(e);
     if(location.protocol==='file:')t.detail+=' 另：本页为本地文件分发模式，移动端浏览器在此模式下通常会直接拒绝实时摄像头权限 —— 请改用下方「调用系统相机」备用通道；电脑端可尝试换用 Chrome / Edge 打开。';
@@ -1179,6 +1237,7 @@ function shutterSound(){
       src.start(ac.currentTime+delay);
     };
     mk(2600,.05,.5,0);mk(900,.07,.4,.06);
+    setTimeout(()=>{try{ac.close();}catch(_){}} ,400);
   }catch(e){}
 }
 function drawWatermark(ctx,w,h){
@@ -1225,8 +1284,21 @@ function showPhotoCaptured(){
 async function shootFlow(){
   const btn=$('#btnShoot');btn.disabled=true;
   const stage=$('#stage');stage.classList.add('focus');
-  for(const n of[3,2,1]){$('#countLayer').innerHTML=`<b>${n}</b>`;await sleep(740);}
+  const hint=$('.stage-bar .hint');const hint0=hint.textContent;
+  hint.textContent='3 秒倒计时中 —— 点击画面可随时取消';
+  let cancelled=false;
+  const onCancel=()=>{cancelled=true;};
+  stage.classList.add('cancelable');
+  stage.addEventListener('click',onCancel);
+  for(const n of[3,2,1]){
+    $('#countLayer').innerHTML=`<b>${n}</b>`;await sleep(740);
+    if(cancelled)break;
+  }
+  stage.removeEventListener('click',onCancel);
+  stage.classList.remove('cancelable');
+  hint.textContent=hint0;
   $('#countLayer').innerHTML='';
+  if(cancelled){stage.classList.remove('focus');btn.disabled=false;toast('已取消拍摄，可调整姿势后重拍');return;}
   const fl=$('#flash');fl.classList.remove('on');void fl.offsetWidth;fl.classList.add('on');
   shutterSound();await sleep(130);
   const photo=capturePhoto();
@@ -1257,7 +1329,8 @@ function confirmPhoto(){
 function skipCam(){
   state.camStatus='skipped';stopStream();
   setSecState(4,'异常','fail');setSecState(5,'未留存','fail');
-  setStep(5,'done');setStep(6,'done');
+  setStep(5,'fail','摄像头核验未完成 —— 已标记异常');
+  setStep(6,'fail','自拍照未留存 —— 供考务人工复核');
   showPane('#sec5','skipped');
   unlockSection(5);unlockSection(6);setStep(7,'active');
   renderVerdict();
@@ -1279,7 +1352,8 @@ function computeVerdict(){
   }
   if(dev.conflict)risks.push('UA 声明与实测设备特征不一致（外接指针设备，或 UA 已被修改）');
   if(state.behavior&&state.behavior.sus)risks.push('行为采样呈现高度规律性（'+state.behavior.susNotes.join('、')+'），疑似自动化输入，建议人工复核');
-  const wn=state.envResults.filter(r=>r.status==='warn'||r.status==='bad').length+state.fpResults.filter(r=>r.status==='warn').length;
+  const dupKeys=['dtype','uaconf'];
+  const wn=state.envResults.filter(r=>(r.status==='warn'||r.status==='bad')&&!dupKeys.includes(r.key)).length+state.fpResults.filter(r=>r.status==='warn').length;
   if(wn)risks.push(`环境与指纹检测中有 ${wn} 项提醒`);
   oks.push(`环境检测 ${state.envResults.length} 项 · 指纹特征 ${state.fpResults.length} 项 · 行为判读：${state.behavior?(state.behavior.sus?'存在自动化嫌疑':'自然人类特征'):'未完成'}`);
   const level=fails.length?'fail':risks.length?'risk':'pass';
@@ -1288,9 +1362,13 @@ function computeVerdict(){
 function renderVerdict(){
   const v=computeVerdict();state.verdict=v;
   setSecState(6,v.level==='pass'?'核验通过':v.level==='risk'?'通过 · 有风险':'核验未通过',v.level==='pass'?'done':v.level==='risk'?'running':'fail');
+  setStep(7,v.level==='pass'?'done':v.level==='risk'?'warn':'fail',
+    v.level==='pass'?'核验通过，报告可下载归档':v.level==='risk'?'通过但存在风险项，需考务人工复核':'核验未通过，报告供考务人工复核');
+  $('#behActions').hidden=true;
   $('#sec6Lock').hidden=true;showPane('#sec6','ready');
   const card=$('#verdictCard');
   card.className='verdict-card'+(v.level==='risk'?' risk':v.level==='fail'?' fail':'');
+  card.style.animation='none';void card.offsetWidth;card.style.animation='';
   card.innerHTML=`
     <h3>${v.level==='pass'?'核 验 通 过':v.level==='risk'?'核验通过 · 有风险':'核 验 未 通 过'}</h3>
     <ul>${v.fails.map(t=>`<li class="bad">${esc(t)}</li>`).join('')}${v.risks.map(t=>`<li class="wrn">${esc(t)}</li>`).join('')}${v.oks.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
@@ -1457,6 +1535,9 @@ function init(){
   const tick=()=>{$('#clock').textContent=fmtTime();};
   tick();setInterval(tick,1000);
   bindPassive();
+  window.addEventListener('beforeunload',e=>{
+    if(state.student&&!state.reportSaved){e.preventDefault();e.returnValue='';}
+  });
   if(location.protocol==='file:')$('#fileNotice').hidden=false;
 
   /* 〇 表单 */
@@ -1502,7 +1583,7 @@ function init(){
       const photo=await processFilePhoto(f);
       state.photo=photo;
       stopStream();
-      setSecState(4,'备用通道','done');setStep(5,'done');
+      setSecState(4,'备用通道','done');setStep(5,'warn','经系统相机备用通道完成 —— 真实性弱于实时视频流');
       unlockSection(5);setStep(6,'active');
       setSecState(5,'待确认','running');
       showPhotoCaptured();
@@ -1516,13 +1597,31 @@ function init(){
     showPane('#sec5','stage');
     $('#sec5').scrollIntoView({behavior:'smooth',block:'start'});
   });
+  $('#btnRefreshCams').addEventListener('click',async()=>{
+    try{
+      const devs=await navigator.mediaDevices.enumerateDevices();
+      state.cams=devs.filter(d=>d.kind==='videoinput');
+      renderCamSelect();
+      toast(state.cams.length?`已刷新：检测到 ${state.cams.length} 个视频输入设备`:'未检测到视频输入设备',state.cams.length?'':'warn');
+    }catch(err){toast('刷新设备列表失败：'+(err.message||'未知错误'),'warn');}
+  });
   $('#camSelect').addEventListener('change',async e=>{
+    const prev=state.camDetail?state.camDetail.label:'';
     try{
       stopStream();
       state.stream=await openCam(e.target.value);
+      if(state.camDetail)state.camDetail.label=state.stream.getVideoTracks()[0].label||state.camDetail.label;
       await bindVideo();
       toast('已切换至：'+(state.stream.getVideoTracks()[0].label||'新设备'));
-    }catch(err){toast('切换摄像头失败：'+(err.message||'未知错误'),'warn');}
+    }catch(err){
+      toast('切换摄像头失败：'+(err.message||'未知错误'),'warn');
+      try{
+        state.stream=await openCam();
+        if(state.camDetail)state.camDetail.label=state.stream.getVideoTracks()[0].label||prev;
+        await bindVideo();
+        toast('已回退到默认摄像头','warn');
+      }catch(_){showPane('#sec4','error');setSecState(4,'异常','fail');}
+    }
   });
 
   /* 伍 自拍 */
@@ -1531,10 +1630,10 @@ function init(){
   $('#btnConfirm').addEventListener('click',confirmPhoto);
 
   /* 陆 报告 */
+  const buildReportBlob=()=>new Blob([buildReport()],{type:'text/html;charset=utf-8'});
   $('#btnDownload').addEventListener('click',()=>{
     try{
-      const blob=new Blob([buildReport()],{type:'text/html;charset=utf-8'});
-      const url=URL.createObjectURL(blob);
+      const url=URL.createObjectURL(buildReportBlob());
       const a=document.createElement('a');
       a.href=url;
       a.download=`设备核验报告_${state.student.cls}_${state.student.name}_${state.reportId}.html`;
@@ -1542,9 +1641,20 @@ function init(){
       a.click();
       a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),4000);
-      setStep(7,'done');setSecState(6,'已归档','done');
+      state.reportSaved=true;
+      const st7=document.querySelector('.step[data-step="7"]');if(st7)st7.title='报告已下载归档';
+      $('#btnDownload').classList.add('archived');
+      setSecState(6,'已归档','done');
       toast('检测报告已生成，开始下载');
     }catch(e){toast('报告生成失败：'+(e.message||'未知错误'),'warn');}
+  });
+  $('#btnPreview').addEventListener('click',()=>{
+    try{
+      const url=URL.createObjectURL(buildReportBlob());
+      const w=window.open(url,'_blank');
+      if(!w){URL.revokeObjectURL(url);toast('新窗口被浏览器拦截，请允许弹出窗口后重试','warn');return;}
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }catch(e){toast('报告预览失败：'+(e.message||'未知错误'),'warn');}
   });
 }
 document.addEventListener('DOMContentLoaded',init);
