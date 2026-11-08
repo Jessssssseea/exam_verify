@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="设备环境核验 logo 方案A">
+  <title>核字方印</title>
+  <rect x="3" y="3" width="58" height="58" rx="12" fill="#b13a2a"/>
+  <rect x="8.5" y="8.5" width="47" height="47" rx="8" fill="none" stroke="#f6f3ea" stroke-opacity=".38" stroke-width="1.5"/>
+  <text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="'Noto Serif SC','SimSun',serif" font-weight="900" font-size="32" fill="#f6f3ea">核</text>
+</svg>

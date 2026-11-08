@@ -98,7 +98,7 @@ Host `index.html` on any static web server (Nginx, Apache or static hosting serv
 
 ## Report Content
 The exported `.html` report includes:
-- Candidate metadata, verification ID, timestamp and graphical verification seal
+- Embedded organization logo (base64‑inlined, no external files needed), candidate metadata, verification ID, timestamp and graphical verification seal
 - Full basic environment detection table
 - Device fingerprint and browser feature details
 - Behaviour‑sampling metrics, automated analysis conclusion and trajectory image

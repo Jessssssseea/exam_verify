@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="设备环境核验 logo 方案C">
+  <title>双环官印</title>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#b13a2a" stroke-width="4"/>
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#b13a2a" stroke-width="1.4"/>
+  <text x="32" y="30" text-anchor="middle" dominant-baseline="central" font-family="'Noto Serif SC','SimSun',serif" font-weight="900" font-size="17" letter-spacing="1" fill="#b13a2a">核验</text>
+  <rect x="29.5" y="45.5" width="5" height="5" fill="#b13a2a" transform="rotate(45 32 48)"/>
+</svg>

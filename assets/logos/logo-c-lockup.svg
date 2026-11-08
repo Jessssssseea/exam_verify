@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 80" role="img" aria-label="设备环境核验 横排字标">
+  <title>设备环境核验单 · 横排字标</title>
+  <g>
+    <circle cx="40" cy="40" r="29" fill="none" stroke="#b13a2a" stroke-width="4"/>
+    <circle cx="40" cy="40" r="23" fill="none" stroke="#b13a2a" stroke-width="1.4"/>
+    <text x="40" y="38" text-anchor="middle" dominant-baseline="central" font-family="'Noto Serif SC','SimSun',serif" font-weight="900" font-size="17" letter-spacing="1" fill="#b13a2a">核验</text>
+    <rect x="37.5" y="53.5" width="5" height="5" fill="#b13a2a" transform="rotate(45 40 56)"/>
+  </g>
+  <text x="86" y="42" font-family="'Noto Serif SC','SimSun',serif" font-weight="900" font-size="26" fill="#1c1915">设备环境核验单</text>
+  <text x="87" y="63" font-family="'IBM Plex Mono','Courier New',monospace" font-size="11" letter-spacing="2" fill="#8b8474">DEVICEPROBE · ONLINE EXAM VERIFICATION</text>
+</svg>

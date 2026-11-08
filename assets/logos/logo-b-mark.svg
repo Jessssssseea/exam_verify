@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="设备环境核验 logo 方案B">
+  <title>盾形取景</title>
+  <path d="M32 3 L57 11 V29 C57 45 47 55.5 32 61 C17 55.5 7 45 7 29 V11 Z" fill="#1c1915"/>
+  <path d="M20 27V20H27" fill="none" stroke="#f6f3ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M37 20H44V27" fill="none" stroke="#f6f3ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 37V44H37" fill="none" stroke="#f6f3ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M27 44H20V37" fill="none" stroke="#f6f3ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25 32.5 L30 37.5 L40 25.5" fill="none" stroke="#e8c98a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
